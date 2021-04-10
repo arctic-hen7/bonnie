@@ -1,0 +1,8 @@
+[scripts]
+
+test.cmd = "echo %firstname %lastname"
+test.args = [
+	"firstname",
+	"lastname"
+]
+cat = "cat hello.txt"

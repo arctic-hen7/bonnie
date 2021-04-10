@@ -2,13 +2,18 @@ use std::env;
 
 mod command;
 mod commands_registry;
+mod read_cfg;
 use crate::command::Command;
-use crate::commands_registry::CommandsRegistry;
+use crate::read_cfg::{get_cfg, get_commands_registry_from_cfg};
+
+const DEFAULT_BONNIE_CFG_PATH: &str = "./bonnie.toml";
 
 fn main() {
-    let mut registry = CommandsRegistry::new();
-    registry.add("test", Command::new("test", vec!["firstname", "lastname"], "echo \"Hello %firstname %lastname!\""));
-    registry.add("cat", Command::new("cat", vec![], "cat hello.txt"));
+    let default_cfg_path = DEFAULT_BONNIE_CFG_PATH.to_string();
+    let cfg_path = env::var("BONNIE_CONF").unwrap_or(default_cfg_path);
+    let cfg = get_cfg(&cfg_path);
+
+    let registry = get_commands_registry_from_cfg(&cfg);
 
     // Get the arguments to this program and extract the command the user wants to run and the arguments they're providing to it
     let prog_args: Vec<String> = env::args().collect();

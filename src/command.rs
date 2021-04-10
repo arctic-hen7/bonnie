@@ -1,14 +1,12 @@
 use std::process::Command as OsCommand;
 
-// TODO error handling for command execution
-
 pub struct Command<'a> {
     name: &'a str,
-    args: Vec<&'a str>,
+    args: Vec<String>, // Because converting a vector of &str to Strings is really annoying
     cmd: &'a str
 }
 impl<'a> Command<'a> {
-    pub fn new(name: &'a str, args: Vec<&'a str>, cmd: &'a str) -> Command<'a> {
+    pub fn new(name: &'a str, args: Vec<String>, cmd: &'a str) -> Command<'a> {
         Command {
             name,
             args,
