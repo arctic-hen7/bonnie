@@ -31,9 +31,17 @@ enum Script {
 }
 
 // Extracts the config from the TOML file and parses it
-pub fn get_cfg(path: &str) -> Config {
-	let cfg_string = fs::read_to_string(path).expect("Error reading bonnie.toml, make sure the file is present in this directory and you have the permissions to read it.");
-	let raw_cfg: RawConfig = toml::from_str(&cfg_string).expect("Invalid Bonnie configuration file.");
+pub fn get_cfg(path: &str) -> Result<Config, String> {
+	let cfg_string = fs::read_to_string(path);
+	let cfg_string = match cfg_string {
+		Ok(cfg_string) => cfg_string,
+		Err(_) => return Err(String::from("Error reading bonnie.toml, make sure the file is present in this directory and you have the permissions to read it."))
+	};
+	let raw_cfg: Result<RawConfig, toml::de::Error> = toml::from_str(&cfg_string);
+	let raw_cfg = match raw_cfg {
+		Ok(raw_cfg) => raw_cfg,
+		Err(_) => return Err(String::from("Invalid Bonnie configuration file."))
+	};
 
 	// Parse the scripts (resolving the enum to a single value)
 	let mut parsed_scripts: HashMap<String, CommandWithArgs> = HashMap::new();
@@ -41,9 +49,9 @@ pub fn get_cfg(path: &str) -> Config {
 		parsed_scripts.insert(name, parse_script(&script));
 	}
 
-	Config {
+	Ok(Config {
 		scripts: parsed_scripts
-	}
+	})
 }
 
 fn parse_script(unparsed_script: &Script) -> CommandWithArgs {

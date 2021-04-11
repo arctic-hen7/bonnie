@@ -13,32 +13,43 @@ impl<'a> Command<'a> {
             cmd
         }
     }
-    pub fn run(command: &str) {
+    pub fn run(command: &str) -> Result<(), String> {
         // Run the given command (accounting for architecture)
+        let cmd_data;
         if cfg!(target_os = "windows") {
-            OsCommand::new("cmd")
+            cmd_data = OsCommand::new("cmd")
                     .args(&["/C", &command])
-                    .spawn()
-                    .unwrap_or_else(|_| panic!("Command '{}' failed to run. This doesn't mean the command produced an error, but that the process couldn't even be initialised.", &command));
+                    .spawn();
         } else {
-            OsCommand::new("sh")
+            cmd_data = OsCommand::new("sh")
                     .arg("-c")
                     .arg(&command)
-                    .spawn()
-                    .unwrap_or_else(|_| panic!("Command '{}' failed to run. This doesn't mean the command produced an error, but that the process couldn't even be initialised.", &command));
+                    .spawn();
         };
+
+        match cmd_data {
+            Ok(_) => Ok(()),
+            Err(_) => Err(
+                format!(
+                    "Command '{}' failed to run. This doesn't mean the command produced an error, but that the process couldn't even be initialised.",
+                    &command
+                )
+            )
+        }
     }
-    pub fn insert_args(&self, arg_values: &[String]) -> String {
+    pub fn insert_args(&self, arg_values: &[String]) -> Result<String, String> {
         // Check if the correct number of arguments was provided
-        // Panic if there are too few
+        // Return an error if there are too few
         // Warn if there are too many
         if self.args.len() > arg_values.len() {
-            panic!(
-                "The command '{command}' requires {num_required_args} argument(s), but {num_given_args} argument(s) were provided (too few). Please provide all the required arguments.",
-                command=&self.name,
-                num_required_args=&self.args.len(),
-                num_given_args=&arg_values.len()
-            )
+            return Err(
+                format!(
+                    "The command '{command}' requires {num_required_args} argument(s), but {num_given_args} argument(s) were provided (too few). Please provide all the required arguments.",
+                    command=&self.name,
+                    num_required_args=&self.args.len(),
+                    num_given_args=&arg_values.len()
+                )
+            );
         }
         if self.args.len() < arg_values.len() {
             println!(
@@ -58,14 +69,17 @@ impl<'a> Command<'a> {
             // Run a quick check to make sure we've changed something (otherwise there's probably a typo in the command)
             // We panic here because substituting '%arg' into the command may result in undefined behaviour
             if new_command == command_with_args {
-                panic!(
-                    "The argument '{arg_name}' could not be substituted into the command '{command}'. This probably means there's a typo somewhere in your command definition.",
-                    arg_name=&arg,
-                    command=&self.name
+                return Err(
+                    format!(
+                        "The argument '{arg_name}' could not be substituted into the command '{command}'. This probably means there's a typo somewhere in your command definition.",
+                        arg_name=&arg,
+                        command=&self.name
+                    )
                 );
             }
             command_with_args = new_command;
         };
-        command_with_args
+
+        Ok(command_with_args)
     }
 }

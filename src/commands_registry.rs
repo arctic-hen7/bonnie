@@ -19,13 +19,13 @@ impl<'a> CommandsRegistry<'a> {
         self.map.remove(&name.to_string());
     }
 
-    pub fn get(&self, name: &str) -> &Command {
+    pub fn get(&self, name: &str) -> Result<&Command, String> {
         let entry = self.map.get(name);
         let entry = match entry {
             Some(entry) => entry,
-            None => panic!("Command '{}' not found.", &name),
+            None => return Err(format!("Command '{}' not found.", &name)),
         };
 
-        entry
+        Ok(entry)
     }
 }
