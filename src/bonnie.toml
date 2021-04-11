@@ -6,3 +6,4 @@ test.args = [
 	"lastname"
 ]
 cat = "cat hello.txt"
+long = "sleep 5 && echo Test"

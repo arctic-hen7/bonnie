@@ -15,23 +15,36 @@ impl<'a> Command<'a> {
     }
     pub fn run(command: &str) -> Result<(), String> {
         // Run the given command (accounting for architecture)
-        let cmd_data;
+        let child;
         if cfg!(target_os = "windows") {
-            cmd_data = OsCommand::new("cmd")
+            child = OsCommand::new("cmd")
                     .args(&["/C", &command])
                     .spawn();
         } else {
-            cmd_data = OsCommand::new("sh")
+            child = OsCommand::new("sh")
                     .arg("-c")
                     .arg(&command)
                     .spawn();
         };
 
-        match cmd_data {
-            Ok(_) => Ok(()),
-            Err(_) => Err(
+        // The child must be mutable so we can wait for it to finish later
+        let mut child = match child {
+            Ok(child) => child,
+            Err(_) => return Err(
                 format!(
                     "Command '{}' failed to run. This doesn't mean the command produced an error, but that the process couldn't even be initialised.",
+                    &command
+                )
+            )
+        };
+
+        // If we don't wait on the child, any long-running commands will print into the prompt because the parent terminates first (try it yourself with the `long` command)
+        let child = child.wait();
+        match child {
+            Ok(_) => Ok(()),
+            Err(_) => return Err(
+                format!(
+                    "Command '{}' didn't run (parent unable to wait on child process). See the Bonnie documentation for more details on this problem.",
                     &command
                 )
             )
