@@ -1,4 +1,3 @@
-use std::fs;
 use std::collections::HashMap;
 use serde::Deserialize;
 use crate::commands_registry::CommandsRegistry;
@@ -30,13 +29,8 @@ enum Script {
 	NoArgs(String) // This variant is shorthand when a command has no arguments
 }
 
-// Extracts the config from the TOML file and parses it
-pub fn get_cfg(path: &str) -> Result<Config, String> {
-	let cfg_string = fs::read_to_string(path);
-	let cfg_string = match cfg_string {
-		Ok(cfg_string) => cfg_string,
-		Err(_) => return Err(String::from("Error reading bonnie.toml, make sure the file is present in this directory and you have the permissions to read it."))
-	};
+// Parses a given config string (extracted for testing purposes)
+pub fn parse_cfg(cfg_string: String) -> Result<Config, String> {
 	let raw_cfg: Result<RawConfig, toml::de::Error> = toml::from_str(&cfg_string);
 	let raw_cfg = match raw_cfg {
 		Ok(raw_cfg) => raw_cfg,

@@ -57,7 +57,7 @@ impl<'a> Command<'a> {
         if append_args && !self.args.is_empty() {
             return Err(
                 format!(
-                    "Command {command} requires all given arguments to be appended to it (ends with special characters '%%'), but also has custom arguments. Right now, only one of these features can be used at a time on a given command. Please alter your Bonnie configuration to reflect this.",
+                    "Command '{command}' requires all given arguments to be appended to it (ends with special characters '%%'), but also has custom arguments. Right now, only one of these features can be used at a time on a given command. Please alter your Bonnie configuration to reflect this.",
                     command=self.name
                 )
             )
