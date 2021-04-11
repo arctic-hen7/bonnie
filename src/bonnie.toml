@@ -7,3 +7,9 @@ test.args = [
 ]
 cat = "cat hello.txt"
 long = "sleep 5 && echo Test"
+with_percent = "echo '%Test'"
+append = "echo %%"
+bad_combination.cmd = "echo %name %%" # This command will not run until custom arguments are allowed to work with appended arguments
+bad_combination.args = [
+	"name"
+]
