@@ -9,3 +9,10 @@ edition = "2018"
 [dependencies]
 toml = "0.5.8"
 serde = { version = "1.0.125", features = ["derive"] }
+
+[lib]
+name = "bonnie_lib"
+
+[[bin]]
+name = "bonnie"
+path = "src/bin/main.rs"

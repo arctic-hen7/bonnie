@@ -1,14 +1,10 @@
 use std::env;
 
-mod logic;
-mod command;
-mod commands_registry;
-mod read_cfg;
-use crate::logic::{get_command_from_cfg_and_args, get_cfg_path, get_cfg, run_cmd};
+use bonnie_lib::{get_command_from_cfg_and_args, get_cfg_path, get_cfg, run_cmd};
 
 // TODO colorise output?
 
-// This program follows the call-only pattern in `main`, so all logic is abstracted into `logic.rs`
+// This program follows the call-only pattern in `main`, so all logic is abstracted into `lib.rs`
 // All error propagation is done with the string errors preformed, so we can print them directly from the match statements
 // As this is a CLI program, any errors are propagated to `main` and then printed with `eprintln!`
 fn main() {

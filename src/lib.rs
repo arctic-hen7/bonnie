@@ -1,6 +1,9 @@
 use std::fs;
 use std::env::VarError;
 
+mod command;
+mod commands_registry;
+mod read_cfg;
 use crate::command::Command;
 use crate::read_cfg::{parse_cfg, get_commands_registry_from_cfg};
 
