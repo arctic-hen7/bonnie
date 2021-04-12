@@ -1,0 +1,38 @@
+# Builds releases for the three major OSes
+name: build-releases
+
+# This will run whenever a new tag is released
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  build-release:
+    runs-on: ${{matrix.os}}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        include:
+          - os: ubuntu-latest
+            bin_name: bonnie
+          - os: macos-latest
+            bin_name: bonnie
+          - os: windows-latest
+            bin_name: bonnie.exe
+    steps:
+      - uses: actions/checkout@v2
+      - name: Test
+        run: cargo check && cargo fmt -- --check && cargo clippy && cargo test
+      - name: Build
+        run: cargo build --release --locked
+      - name: Release
+        uses: marvinpinto/action-automatic-releases@v1.1.1
+        with:
+          repo_token: ${{secrets.GITHUB_TOKEN}}
+          prerelease: true
+          draft: true
+          files: |
+            LICENSE.txt
+            README.md
+            target/releases/${{matrix.bin_name}}
