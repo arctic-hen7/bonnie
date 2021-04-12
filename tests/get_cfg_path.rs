@@ -9,7 +9,7 @@ fn returns_default_path_if_env_not_present() {
 }
 #[test]
 fn returns_default_path_if_env_not_valid() {
-    use std::ffi::{OsString};
+    use std::ffi::OsString;
     let os_string = OsString::from("foo");
 
     let cfg_path = get_cfg_path(Err(VarError::NotUnicode(os_string)));

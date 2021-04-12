@@ -1,13 +1,13 @@
-use std::collections::HashMap;
 use crate::command::Command;
+use std::collections::HashMap;
 
 pub struct CommandsRegistry<'a> {
-    map: HashMap<String, Command<'a>>
+    map: HashMap<String, Command<'a>>,
 }
 impl<'a> CommandsRegistry<'a> {
     pub fn new() -> CommandsRegistry<'a> {
         CommandsRegistry {
-            map: HashMap::new()
+            map: HashMap::new(),
         }
     }
 

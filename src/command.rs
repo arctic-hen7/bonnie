@@ -3,28 +3,19 @@ use std::process::Command as OsCommand;
 pub struct Command<'a> {
     name: &'a str,
     args: Vec<String>, // Because converting a vector of &str to Strings is really annoying
-    cmd: &'a str
+    cmd: &'a str,
 }
 impl<'a> Command<'a> {
     pub fn new(name: &'a str, args: Vec<String>, cmd: &'a str) -> Command<'a> {
-        Command {
-            name,
-            args,
-            cmd
-        }
+        Command { name, args, cmd }
     }
     pub fn run(command: &str) -> Result<(), String> {
         // Run the given command (accounting for architecture)
         let child;
         if cfg!(target_os = "windows") {
-            child = OsCommand::new("cmd")
-                    .args(&["/C", &command])
-                    .spawn();
+            child = OsCommand::new("cmd").args(&["/C", &command]).spawn();
         } else {
-            child = OsCommand::new("sh")
-                    .arg("-c")
-                    .arg(&command)
-                    .spawn();
+            child = OsCommand::new("sh").arg("-c").arg(&command).spawn();
         };
 
         // The child must be mutable so we can wait for it to finish later
@@ -60,7 +51,7 @@ impl<'a> Command<'a> {
                     "Command '{command}' requires all given arguments to be appended to it (ends with special characters '%%'), but also has custom arguments. Right now, only one of these features can be used at a time on a given command. Please alter your Bonnie configuration to reflect this.",
                     command=self.name
                 )
-            )
+            );
         }
         // Check if the correct number of arguments was provided (if we're appending, any number is valid)
         // Return an error if there are too few
@@ -95,7 +86,7 @@ impl<'a> Command<'a> {
             // Loop through all the arguments the command takes, substituting in each one
             for (idx, arg) in self.args.iter().enumerate() {
                 let arg_value = &arg_values[idx]; // The arrays are the same length, see above check
-                // All arguments are shown in the command string as `%name` or the like, so we get that whole string
+                                                  // All arguments are shown in the command string as `%name` or the like, so we get that whole string
                 let arg_with_sign = "%".to_string() + arg;
                 let new_command = command_with_args.replace(&arg_with_sign, &arg_value);
                 // Run a quick check to make sure we've changed something (otherwise there's probably a typo in the command)
@@ -110,10 +101,9 @@ impl<'a> Command<'a> {
                     );
                 }
                 command_with_args = new_command;
-            };
+            }
 
             Ok(command_with_args)
         }
-        
     }
 }

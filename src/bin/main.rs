@@ -1,6 +1,6 @@
 use std::env;
 
-use bonnie_lib::{get_command_from_cfg_and_args, get_cfg_path, get_cfg, run_cmd, init, help};
+use bonnie_lib::{get_cfg, get_cfg_path, get_command_from_cfg_and_args, help, init, run_cmd};
 
 // TODO colorise output?
 
@@ -21,28 +21,30 @@ fn main() {
         // As this creates a file, it can cause errors
         let output = init();
         match output {
-            Ok(_) => return println!("Bonnie configuration file created at './bonnie.toml'. Enjoy!"),
-            Err(err) => return eprintln!("{}", err)
+            Ok(_) => {
+                return println!("Bonnie configuration file created at './bonnie.toml'. Enjoy!")
+            }
+            Err(err) => return eprintln!("{}", err),
         }
     } else {
         // Get the contents of the configuration file
         let cfg_string = get_cfg(&cfg_path);
         let cfg_string = match cfg_string {
             Ok(cfg_string) => cfg_string,
-            Err(err) => return eprintln!("{}", err)
+            Err(err) => return eprintln!("{}", err),
         };
 
         // Get the command to run from the arguments the user gave and the configuration file
         let command_with_args = get_command_from_cfg_and_args(cfg_string, prog_args);
         let command_with_args = match command_with_args {
             Ok(command_with_args) => command_with_args,
-            Err(err) => return eprintln!("{}", err)
+            Err(err) => return eprintln!("{}", err),
         };
 
         let cmd_output = run_cmd(command_with_args);
         match cmd_output {
             Ok(cmd_output) => cmd_output,
-            Err(err) => return eprintln!("{}", err)
+            Err(err) => return eprintln!("{}", err),
         };
     }
 }
