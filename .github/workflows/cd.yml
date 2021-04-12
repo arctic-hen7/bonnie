@@ -1,0 +1,41 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  build-release:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            artifact_name: bonnie
+            asset_name: bonnie-linux-amd64
+          - os: macos-latest
+            artifact_name: bonnie
+            asset_name: bonnie-macos-amd64
+          - os: windows-latest
+            artifact_name: bonnie.exe
+            asset_name: bonnie-windows-amd64
+    steps:
+      - name: Upload binary to release
+        uses: svenstaro/upload-release-action@v1-release
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: target/release/${{ matrix.artifact_name }}
+          asset_name: ${{ matrix.asset_name }}
+          tag: ${{ github.event.client_payload.new_version }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build
+        run: cargo build --release --locked
+      - name: Release binary
+        uses: svenstaro/upload-release-action@v1-release
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: target/release/${{ matrix.artifact_name }}
+          asset_name: ${{ matrix.asset_name }}
+        uses: marvinpinto/action-automatic-releases@v1.1.1
