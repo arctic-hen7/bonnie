@@ -75,6 +75,7 @@ impl<'a> Command<'a> {
                 )
             );
         }
+        // TEST this case
         if self.args.len() < arg_values.len() && !append_args {
             println!(
                 "Warning: The command '{command}' only needs {num_required_args} argument(s), but {num_given_args} argument(s) were provided (too many). Your command will still run, this warning is just here to save time in debugging!",
@@ -98,7 +99,7 @@ impl<'a> Command<'a> {
                 let arg_with_sign = "%".to_string() + arg;
                 let new_command = command_with_args.replace(&arg_with_sign, &arg_value);
                 // Run a quick check to make sure we've changed something (otherwise there's probably a typo in the command)
-                // We panic here because substituting '%arg' into the command may result in undefined behaviour
+                // We return an error here because substituting '%arg' into the command may result in undefined behaviour
                 if new_command == command_with_args {
                     return Err(
                         format!(

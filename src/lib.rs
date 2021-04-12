@@ -7,7 +7,7 @@ mod read_cfg;
 use crate::command::Command;
 use crate::read_cfg::{parse_cfg, get_commands_registry_from_cfg};
 
-const DEFAULT_BONNIE_CFG_PATH: &str = "./bonnie.toml";
+pub const DEFAULT_BONNIE_CFG_PATH: &str = "./bonnie.toml";
 
 // Performs most program logic with manipulable arguments for easier testing
 // This only calls component functions that propagate pre-formed errors, so we can safely use `?`
@@ -41,6 +41,7 @@ pub fn get_cfg(path: &str) -> Result<String, String> {
 }
 
 // Gets the path to the config file based on given environment variables
+// TODO if non-unicode variable given, print a warning to explain it (right now this behaviour needs to be documented)
 pub fn get_cfg_path(env_var: Result<String, VarError>) -> String {
 	let default_cfg_path = DEFAULT_BONNIE_CFG_PATH.to_string();
 
