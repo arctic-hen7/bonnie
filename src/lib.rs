@@ -4,8 +4,10 @@ use std::env::VarError;
 mod command;
 mod commands_registry;
 mod read_cfg;
+mod help_page;
 use crate::command::Command;
 use crate::read_cfg::{parse_cfg, get_commands_registry_from_cfg};
+use crate::help_page::BONNIE_HELP_PAGE;
 
 pub const DEFAULT_BONNIE_CFG_PATH: &str = "./bonnie.toml";
 
@@ -75,7 +77,5 @@ start = \"echo \\\"No start script yet.\\\"\"
     }
 }
 pub fn help() {
-    println!(
-"Help page TODO"
-    );
+    println!("{}", BONNIE_HELP_PAGE);
 }
