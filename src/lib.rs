@@ -54,3 +54,28 @@ pub fn run_cmd(cmd: String) -> Result<(), String> {
 
 	Ok(())
 }
+
+// Functions for reserved commands
+pub fn init() -> Result<(), String> {
+    // Check if there's already a config file in this directory
+    if fs::metadata("./bonnie.toml").is_ok() {
+        Err(String::from("A Bonnie configuration file already exists in this directory. If you want to create a new one, please delete the old one first."))
+    } else {
+        // Create a new `bonnie.toml` file
+        let output = fs::write("./bonnie.toml",
+"[scripts]
+start = \"echo \\\"No start script yet.\\\"\"
+"
+        );
+
+        match output {
+    		Ok(_) => Ok(()),
+    		Err(_) => Err(String::from("Error creating new bonnie.toml, make sure you have the permissions to write to this directory."))
+    	}
+    }
+}
+pub fn help() {
+    println!(
+"Help page TODO"
+    );
+}
