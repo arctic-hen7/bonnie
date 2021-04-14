@@ -31,7 +31,11 @@ Now if you run `bonnie greet Donald Knuth` you should get `Greetings Knuth. I se
 
 ## Installation
 
-Bonnie is built in [Rust](https://rust-lang.org), and right now you'll have to compile the code yourself to use Bonnie. Adding a releases page with pre-compiled binaries for major operating systems is my number 1 priority on this project right now.
+Bonnie is built in [Rust](https://rust-lang.org), and you can either download a pre-compiled binary from [here](https://github.com/arctic-hen7/bonnie/releases) if you're running on one of the three major OSes on a 64-bit architecture, or you can clone this repository and build the code yourself. I'm happy to add more binaries for more OSes by request, please file an issue for the matter.
+
+### Using a pre-compiled binary
+
+If you head over to the [releases page](https://github.com/arctic-hen7/bonnie/releases) on this repository, you'll be able to download binaries for the most recent version of Bonnie for the three major operating systems (Linux, MacOS, and Windows). GitHub Actions builds these automatically whenever a new tag is pushed, though I personally develop on Linux, so if the Windows or MacOS binaries don't work for some reason, please let me know! After downloading the binary, it should work immediately, though you may need to allow executing it as a program on Unix systems with `chmod +x ./bonnie-linux-amd64` (or whatever your download is called). Then, you can move it to a location that suits you, like `/usr/local/bin` on Linux so you can execute it from anywhere on your system.
 
 ### Building manually
 
