@@ -1,6 +1,6 @@
 // This file just defines a single constant for the help page that'll be served to users with `bonnie help`
 
-pub fn help_command()->String{
+pub fn help_command() -> String {
     let bonnie_help_page = format!("
 Example Usage:
     Commands can be supplied by specifying in the bonnie.toml: 
@@ -35,5 +35,5 @@ Appending arguments:
         dc = \"docker-compose --env-file .my.env %%\"
 ");
 
-bonnie_help_page
+    bonnie_help_page
 }
