@@ -6,7 +6,7 @@ mod commands_registry;
 mod help_page;
 mod read_cfg;
 use crate::command::Command;
-use crate::help_page::BONNIE_HELP_PAGE;
+use crate::help_page::help_command;
 use crate::read_cfg::{get_commands_registry_from_cfg, parse_cfg};
 
 pub const DEFAULT_BONNIE_CFG_PATH: &str = "./bonnie.toml";
@@ -81,5 +81,5 @@ start = \"echo \\\"No start script yet.\\\"\"
     }
 }
 pub fn help() {
-    println!("{}", BONNIE_HELP_PAGE);
+    println!("{}", help_command());
 }
