@@ -16,7 +16,7 @@ Example Usage:
     To run the command in the terimal:
         'bonnie greet Donald Knuth'
         
-    Arguments can be used multiple times in a command::
+    Arguments can be used multiple times in a command:
 
         [script]
         greet.cmd = \"echo \"Greetings %lastname. I see your first name is %firstname?\" and not %lastname\"
