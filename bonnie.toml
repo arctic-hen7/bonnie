@@ -1,0 +1,7 @@
+[scripts]
+build = "cargo build"
+test = "cargo test"
+dev = "cargo watch -x \"run\"" # Run `cargo install cargo-watch` to add Cargo Watch for this
+
+# Releases the project (maintainers only)
+release = "standard-version && git push --follow-tags origin main"
