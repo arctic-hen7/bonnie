@@ -26,6 +26,11 @@ enum Script {
     NoArgs(String), // This variant is shorthand when a command has no arguments
 }
 
+#[derive(Deserialize, Debug)]
+pub struct Dependencies {
+    dependencies: HashMap<String, String>,
+}
+
 // Parses a given config string (extracted for testing purposes)
 pub fn parse_cfg(cfg_string: String) -> Result<Config, String> {
     let raw_cfg: Result<RawConfig, toml::de::Error> = toml::from_str(&cfg_string);
@@ -66,4 +71,13 @@ pub fn get_commands_registry_from_cfg(cfg: &Config) -> CommandsRegistry {
     }
 
     commands_registry
+}
+
+pub fn parse_dependencies(cfg_string: String) -> Result<Dependencies, String> {
+    let raw_cfg: Result<Dependencies, toml::de::Error> = toml::from_str(&cfg_string);
+    let raw_cfg = match raw_cfg {
+        Ok(raw_cfg) => raw_cfg,
+        Err(_) => return Err(String::from("Please create a dependecy key in config")),
+    };
+    Ok(raw_cfg)
 }

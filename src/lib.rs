@@ -5,12 +5,13 @@ mod command;
 mod commands_registry;
 mod help_page;
 mod read_cfg;
+mod install;
 use crate::command::Command;
 use crate::help_page::BONNIE_HELP_PAGE;
-use crate::read_cfg::{get_commands_registry_from_cfg, parse_cfg};
+use crate::read_cfg::{get_commands_registry_from_cfg, parse_cfg, parse_dependencies, Dependencies};
+use crate::install::{get_latest_version};
 
 pub const DEFAULT_BONNIE_CFG_PATH: &str = "./bonnie.toml";
-
 // Performs most program logic with manipulable arguments for easier testing
 // This only calls component functions that propagate pre-formed errors, so we can safely use `?`
 // This function does not run the final command because that would produce side effects outside the testing environment
@@ -36,6 +37,15 @@ pub fn get_command_from_cfg_and_args(
     Ok(command_with_args)
 }
 
+pub fn install_dependencie_from_toml(value:String)->Result<Dependencies, String>{
+   Ok(parse_dependencies(value)?)
+}
+
+pub fn install_dependencie_from_arg(args:&[std::string::String]){
+   for dependency in args {
+    get_latest_version(dependency)
+   }
+}
 // Extracts the config from the TOML file at the given path
 pub fn get_cfg(path: &str) -> Result<String, String> {
     let cfg_string = fs::read_to_string(path);

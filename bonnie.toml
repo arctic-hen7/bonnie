@@ -5,3 +5,8 @@ dev = "cargo watch -x \"run\"" # Run `cargo install cargo-watch` to add Cargo Wa
 
 # Releases the project (maintainers only)
 release = "standard-version && git push --follow-tags origin main"
+
+[dependencies]
+express="1"
+mongoose="2"
+dotenv="3"

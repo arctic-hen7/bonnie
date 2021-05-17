@@ -1,6 +1,9 @@
 use std::env;
 
-use bonnie_lib::{get_cfg, get_cfg_path, get_command_from_cfg_and_args, help, init, run_cmd};
+use bonnie_lib::{
+    get_cfg, get_cfg_path, get_command_from_cfg_and_args, help, init,
+    install_dependencie_from_toml, run_cmd, install_dependencie_from_arg
+};
 
 // TODO colorise output?
 
@@ -25,6 +28,18 @@ fn main() {
                 return println!("Bonnie configuration file created at './bonnie.toml'. Enjoy!")
             }
             Err(err) => return eprintln!("{}", err),
+        }
+    } else if prog_args.get(1) == Some(&String::from("install"))
+        || prog_args.get(1) == Some(&String::from("i"))
+    {
+        if prog_args.get(2) == None {
+            //install dependencies from toml config when no arg is supplied
+            let cfg_string = get_cfg(&cfg_path);
+            install_dependencie_from_toml(cfg_string.unwrap()).unwrap();
+        } else {
+            //install dependencies from args
+            let dependecy_list = prog_args.get(2..prog_args.len());
+            install_dependencie_from_arg(dependecy_list.unwrap());
         }
     } else {
         // Get the contents of the configuration file
