@@ -1,16 +1,17 @@
 use std::env::VarError;
 use std::fs;
 
-
 mod command;
 mod commands_registry;
 mod help_page;
-mod read_cfg;
 mod install;
+mod read_cfg;
 use crate::command::Command;
 use crate::help_page::BONNIE_HELP_PAGE;
-use crate::read_cfg::{get_commands_registry_from_cfg, parse_cfg, parse_dependencies, Dependencies};
-use crate::install::{get_latest_version};
+use crate::install::get_latest_version;
+use crate::read_cfg::{
+    get_commands_registry_from_cfg, parse_cfg, parse_dependencies, Dependencies,
+};
 
 pub const DEFAULT_BONNIE_CFG_PATH: &str = "./bonnie.toml";
 // Performs most program logic with manipulable arguments for easier testing
@@ -38,14 +39,15 @@ pub fn get_command_from_cfg_and_args(
     Ok(command_with_args)
 }
 
-pub fn install_dependencie_from_toml(value:String)->Result<Dependencies, String>{
-   Ok(parse_dependencies(value)?)
+pub fn install_dependencie_from_toml(value: String) -> Result<Dependencies, String> {
+    Ok(parse_dependencies(value)?)
 }
 
-pub async fn install_dependencie_from_arg(args:&[std::string::String]){
-   for dependency in args {
-    get_latest_version(dependency).await
-   }
+pub async fn install_dependencie_from_arg(args: &[std::string::String]) {
+    for dependency in args {
+        let (package, version) = get_latest_version(dependency).await.unwrap();
+        println!("package {}, latest {}", package, version)
+    }
 }
 // Extracts the config from the TOML file at the given path
 pub fn get_cfg(path: &str) -> Result<String, String> {

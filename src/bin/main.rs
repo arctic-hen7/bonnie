@@ -1,9 +1,8 @@
 use std::env;
 
-
 use bonnie_lib::{
-    get_cfg, get_cfg_path, get_command_from_cfg_and_args, help, init,
-    install_dependencie_from_toml, run_cmd, install_dependencie_from_arg
+    get_cfg, get_cfg_path, get_command_from_cfg_and_args, help, init, install_dependencie_from_arg,
+    install_dependencie_from_toml, run_cmd,
 };
 
 // TODO colorise output?
