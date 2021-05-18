@@ -1,6 +1,7 @@
 use std::env::VarError;
 use std::fs;
 
+
 mod command;
 mod commands_registry;
 mod help_page;
@@ -41,9 +42,9 @@ pub fn install_dependencie_from_toml(value:String)->Result<Dependencies, String>
    Ok(parse_dependencies(value)?)
 }
 
-pub fn install_dependencie_from_arg(args:&[std::string::String]){
+pub async fn install_dependencie_from_arg(args:&[std::string::String]){
    for dependency in args {
-    get_latest_version(dependency)
+    get_latest_version(dependency).await
    }
 }
 // Extracts the config from the TOML file at the given path

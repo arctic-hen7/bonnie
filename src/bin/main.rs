@@ -1,5 +1,6 @@
 use std::env;
 
+
 use bonnie_lib::{
     get_cfg, get_cfg_path, get_command_from_cfg_and_args, help, init,
     install_dependencie_from_toml, run_cmd, install_dependencie_from_arg
@@ -10,7 +11,8 @@ use bonnie_lib::{
 // This program follows the call-only pattern in `main`, so all logic is abstracted into `lib.rs`
 // All error propagation is done with the string errors preformed, so we can print them directly from the match statements
 // As this is a CLI program, any errors are propagated to `main` and then printed with `eprintln!`
-fn main() {
+#[tokio::main]
+async fn main() {
     // Get the path of the configuration file
     let cfg_path = get_cfg_path(env::var("BONNIE_CONF"));
     // Get the arguments to this program
@@ -39,7 +41,7 @@ fn main() {
         } else {
             //install dependencies from args
             let dependecy_list = prog_args.get(2..prog_args.len());
-            install_dependencie_from_arg(dependecy_list.unwrap());
+            install_dependencie_from_arg(dependecy_list.unwrap()).await;
         }
     } else {
         // Get the contents of the configuration file
