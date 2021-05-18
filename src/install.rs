@@ -23,6 +23,6 @@ pub async fn get_tarball_download_link(dependency:&String, version:&String)->Res
                 let data = &*object.get("dist").unwrap();
                 return Ok(String::from(data["tarball"].as_str().unwrap()));
             }
-            Err(_) => return Err(String::from("Invalid Bonnie configuration file.")),
+            Err(_) => return Err(String::from("Error getting download link")),
         };
 }
