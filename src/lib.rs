@@ -9,7 +9,7 @@ mod read_cfg;
 use crate::command::Command;
 use crate::help_page::BONNIE_HELP_PAGE;
 use crate::install::{
-    get_dependencies_and_dev_dependencies, get_latest_version, get_tarball_download_link,
+    get_dependencies_and_dev_dependencies, get_latest_version, get_tarball_download_link, fetch_url
 };
 use crate::read_cfg::{
     get_commands_registry_from_cfg, parse_cfg, parse_dependencies, Dependencies,
@@ -49,7 +49,8 @@ pub async fn install_dependencie_from_arg(args: &[std::string::String]) {
     for dependency in args {
         let (package, version) = get_latest_version(dependency).await.unwrap();
         let link = get_tarball_download_link(package, &version).await.unwrap();
-        println!("link {}", link);
+        fetch_url(&link).await.unwrap();
+       // println!("link {}", link);
         let dep= get_dependencies_and_dev_dependencies(package, &version).await.unwrap();
         println!("dependencies {:?}", dep)
     }
