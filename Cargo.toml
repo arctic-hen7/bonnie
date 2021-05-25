@@ -13,6 +13,9 @@ reqwest = { version = "0.11", features = ["json"] }
 tokio = { version = "1", features = ["full"] }
 serde_json = "1"
 url = "2.2.2"
+flate2 = "1.0.20"
+tar = "0.4.33"
+dircpy="0.3.6"
 
 [lib]
 name = "bonnie_lib"

@@ -1,8 +1,13 @@
+use dircpy::*;
+use flate2::read::GzDecoder;
 use std::collections::HashMap;
-use std::io::Cursor;
-use url::Url; 
-use std::{fs, path::Path};
 use std::error::Error;
+use std::io::Cursor;
+use std::{fs, fs::File, path::Path};
+use tar::Archive;
+use url::Url;
+
+const NODE_MODULES: &str = "node_modules";
 
 pub async fn get_latest_version(dependency: &String) -> Result<(&String, String), String> {
     let url = format!("https://registry.npmjs.org/{}", dependency);
@@ -18,10 +23,10 @@ pub async fn get_latest_version(dependency: &String) -> Result<(&String, String)
     };
 }
 
-pub async fn get_tarball_download_link(
+pub async fn get_tarball_download_link_and_name(
     dependency: &String,
     version: &String,
-) -> Result<String, String> {
+) -> Result<(String, String), String> {
     let url = format!("https://registry.npmjs.org/{}/{}", dependency, version);
     let reponse = reqwest::get(url).await.unwrap();
     let object: std::result::Result<serde_json::Value, reqwest::Error> =
@@ -29,7 +34,11 @@ pub async fn get_tarball_download_link(
     match object {
         Ok(object) => {
             let data = &*object.get("dist").unwrap();
-            return Ok(String::from(data["tarball"].as_str().unwrap()));
+            let name = &*object.get("name").unwrap();
+            return Ok((
+                String::from(data["tarball"].as_str().unwrap()),
+                (String::from(name.as_str().unwrap())),
+            ));
         }
         Err(_) => return Err(String::from("Error getting download link")),
     };
@@ -74,26 +83,40 @@ pub async fn get_dependencies_and_dev_dependencies(
     };
 }
 
-pub async fn fetch_url(url: &String) -> Result<(), Box<dyn Error>> {
-    check_node_module().unwrap_or_else(|error|{
+pub async fn download_package(url: (String, String)) -> Result<(), Box<dyn Error>> {
+    check_node_module().unwrap_or_else(|error| {
         eprintln!("error creating node_modules dir {}", error);
         std::process::exit(1);
     });
-    let response = reqwest::get(url).await?;
-    let url_parse = Url::parse(url.as_str()).unwrap();
-    let filename= url_parse.path().split("/").last().unwrap();
-    let write_path=format!("node_modules/{}", filename);
-    let mut file = std::fs::File::create(write_path)?;
-    let mut content =  Cursor::new(response.bytes().await?);
+    let response = reqwest::get(&url.0).await?;
+    let url_parse = Url::parse(&url.0.as_str()).unwrap();
+    let filename = url_parse.path().split("/").last().unwrap();
+    let write_path = format!("{}/{}", NODE_MODULES, filename);
+    let mut file = std::fs::File::create(&write_path)?;
+    let mut content = Cursor::new(response.bytes().await?);
     std::io::copy(&mut content, &mut file)?;
+    exract(&write_path, &url.1).unwrap();
     Ok(())
 }
 
-fn check_node_module()->Result<(),  Box<dyn Error>>{
-    let exist=Path::new("node_modules").exists();
+fn check_node_module() -> Result<(), Box<dyn Error>> {
+    let exist = Path::new(NODE_MODULES).exists();
 
-    if !exist{
-        fs::create_dir("node_modules")?;
+    if !exist {
+        fs::create_dir(NODE_MODULES)?;
     }
+    Ok(())
+}
+
+fn exract(zip_file: &str, folder: &String) -> Result<(), Box<dyn Error>> {
+    let tar_gz = File::open(zip_file)?;
+    let tar = GzDecoder::new(tar_gz);
+    let mut archive = Archive::new(tar);
+    let write_path = format!("{}/{}", NODE_MODULES, folder);
+    archive.unpack(&write_path)?;
+    let from = format!("{}/package/", &write_path);
+    copy_dir(&from, write_path)?;
+    fs::remove_dir_all(&from)?;
+    fs::remove_file(zip_file)?;
     Ok(())
 }
