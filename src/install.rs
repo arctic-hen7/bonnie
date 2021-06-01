@@ -6,6 +6,7 @@ use std::io::Cursor;
 use std::{fs, fs::File, path::Path};
 use tar::Archive;
 use url::Url;
+use async_recursion::async_recursion;
 
 const NODE_MODULES: &str = "node_modules";
 
@@ -56,7 +57,7 @@ pub async fn get_dependencies_and_dev_dependencies(
     match object {
         Ok(object) => {
             let dependencies = object.get("dependencies");
-            let dev_dependencies = object.get("devDependencies");
+            // let dev_dependencies = object.get("devDependencies");
             match dependencies {
                 Some(dependency_value) => {
                     let dependency_map = dependency_value.as_object().unwrap();
@@ -67,16 +68,17 @@ pub async fn get_dependencies_and_dev_dependencies(
                 }
                 None => {}
             }
-            match dev_dependencies {
-                Some(dependency_value) => {
-                    let dependency_map = dependency_value.as_object().unwrap();
-                    for (key, value) in dependency_map.iter() {
-                        all_dependencies
-                            .insert(String::from(key), String::from(value.as_str().unwrap()));
-                    }
-                }
-                None => {}
-            }
+            //don't install dev dep
+            // match dev_dependencies {
+            //     Some(dependency_value) => {
+            //         let dependency_map = dependency_value.as_object().unwrap();
+            //         for (key, value) in dependency_map.iter() {
+            //             all_dependencies
+            //                 .insert(String::from(key), String::from(value.as_str().unwrap()));
+            //         }
+            //     }
+            //     None => {}
+            // }
             return Ok(all_dependencies);
         }
         Err(_) => return Err(String::from("Error getting package")),
@@ -119,4 +121,38 @@ fn exract(zip_file: &str, folder: &String) -> Result<(), Box<dyn Error>> {
     fs::remove_dir_all(&from)?;
     fs::remove_file(zip_file)?;
     Ok(())
+}
+
+
+#[async_recursion]
+pub async fn get_related_dependencies(dependency:&String, version:&String)
+->Result<HashMap<std::string::String, std::string::String>, String>{
+    let url = format!("https://registry.npmjs.org/{}/{}", dependency, version);
+    let mut all_dependencies: HashMap<std::string::String, std::string::String> = HashMap::new();
+    let reponse = reqwest::get(url).await.unwrap();
+    let object: std::result::Result<serde_json::Value, reqwest::Error> =
+        reponse.json::<serde_json::Value>().await;
+    match object {
+        Ok(object)=>{
+            let dependencies = object.get("dependencies");
+            let dev_dependencies = object.get("devDependencies");
+
+            match dependencies {
+                Some(dependency_value) => {
+                    let dependency_map = dependency_value.as_object().unwrap();
+                    if dependency_map.len()>0 {
+                        for (key, value) in dependency_map.iter() {
+                            all_dependencies
+                                .insert(String::from(key), String::from(value.as_str().unwrap()));
+                            get_related_dependencies(key, &String::from(value.as_str().unwrap())).await?;
+                        }
+                    }
+                }
+                None => {}
+            }
+            return Ok(all_dependencies);
+
+        }
+        Err(_)=>{return Err(String::from("Error getting package"))}
+    }
 }

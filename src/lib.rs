@@ -10,7 +10,7 @@ use crate::command::Command;
 use crate::help_page::BONNIE_HELP_PAGE;
 use crate::install::{
     download_package, get_dependencies_and_dev_dependencies, get_latest_version,
-    get_tarball_download_link_and_name,
+    get_tarball_download_link_and_name, get_related_dependencies
 };
 use crate::read_cfg::{
     get_commands_registry_from_cfg, parse_cfg, parse_dependencies, Dependencies,
@@ -52,14 +52,22 @@ pub async fn install_dependencie_from_arg(args: &[std::string::String]) {
         let link = get_tarball_download_link_and_name(package, &version)
             .await
             .unwrap();
-        download_package(link).await.unwrap();
+       // download_package(link).await.unwrap();
         // println!("link {}", link);
-        let dep = get_dependencies_and_dev_dependencies(package, &version)
+        let mut dep = get_dependencies_and_dev_dependencies(package, &version)
             .await
             .unwrap();
-        println!("dependencies {:?}", dep)
+            for (k, v) in dep.clone(){
+                let a = get_related_dependencies(&k, &v).await.unwrap();
+                println!("{:?}", a);
+                for(key, value) in a{
+                    dep.insert(key, value);
+                }
+            }
+        println!("dependencies: {:?}", dep)
     }
 }
+
 // Extracts the config from the TOML file at the given path
 pub fn get_cfg(path: &str) -> Result<String, String> {
     let cfg_string = fs::read_to_string(path);
