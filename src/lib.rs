@@ -10,7 +10,7 @@ use crate::command::Command;
 use crate::help_page::BONNIE_HELP_PAGE;
 use crate::install::{
     download_package, get_dependencies_and_dev_dependencies, get_latest_version,
-    get_tarball_download_link_and_name, get_related_dependencies
+    get_related_dependencies, get_tarball_download_link_and_name,
 };
 use crate::read_cfg::{
     get_commands_registry_from_cfg, parse_cfg, parse_dependencies, Dependencies,
@@ -49,22 +49,42 @@ pub fn install_dependencie_from_toml(value: String) -> Result<Dependencies, Stri
 pub async fn install_dependencie_from_arg(args: &[std::string::String]) {
     for dependency in args {
         let (package, version) = get_latest_version(dependency).await.unwrap();
-        let link = get_tarball_download_link_and_name(package, &version)
-            .await
-            .unwrap();
-       // download_package(link).await.unwrap();
-        // println!("link {}", link);
+        let version = version.replace("~", "");
+        println!("getting packages...");
         let mut dep = get_dependencies_and_dev_dependencies(package, &version)
             .await
             .unwrap();
-            for (k, v) in dep.clone(){
-                let a = get_related_dependencies(&k, &v).await.unwrap();
-                println!("{:?}", a);
-                for(key, value) in a{
-                    dep.insert(key, value);
+        for (k, v) in dep.clone() {
+            let v = v.replace("~", "");
+            let a = get_related_dependencies(&k, &v).await.unwrap();
+            println!("{:?}", a);
+            for (key, value) in a {
+                dep.insert(key, value);
+            }
+        }
+        for (k, v) in dep.clone() {
+            println!("downloading dependency {} ...", k);
+            let v = v.replace("~", "");
+            let link = get_tarball_download_link_and_name(&k, &v).await;
+            match link {
+                Ok(link) => {
+                    download_package(link).await.unwrap();
+                }
+                Err(err) => {
+                    eprintln!("{}", err)
                 }
             }
-        println!("dependencies: {:?}", dep)
+        }
+        println!("downloading dependency {} ...", package);
+        let link = get_tarball_download_link_and_name(&package, &version).await;
+        match link {
+            Ok(link) => {
+                download_package(link).await.unwrap();
+            }
+            Err(err) => {
+                eprintln!("{}", err)
+            }
+        }
     }
 }
 
