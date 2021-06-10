@@ -36,7 +36,7 @@ async fn main() {
         if prog_args.get(2) == None {
             //install dependencies from toml config when no arg is supplied
             let cfg_string = get_cfg(&cfg_path);
-            install_dependencie_from_toml(cfg_string.unwrap()).unwrap();
+            install_dependencie_from_toml(cfg_string.unwrap()).await;
         } else {
             //install dependencies from args
             let dependecy_list = prog_args.get(2..prog_args.len());

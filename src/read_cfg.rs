@@ -28,7 +28,7 @@ enum Script {
 
 #[derive(Deserialize, Debug)]
 pub struct Dependencies {
-    dependencies: HashMap<String, String>,
+    pub dependencies: HashMap<String, String>,
 }
 
 // Parses a given config string (extracted for testing purposes)

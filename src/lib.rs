@@ -13,7 +13,7 @@ use crate::install::{
     get_related_dependencies, get_tarball_download_link_and_name,
 };
 use crate::read_cfg::{
-    get_commands_registry_from_cfg, parse_cfg, parse_dependencies, Dependencies,
+    get_commands_registry_from_cfg, parse_cfg, parse_dependencies,
 };
 
 pub const DEFAULT_BONNIE_CFG_PATH: &str = "./bonnie.toml";
@@ -42,8 +42,47 @@ pub fn get_command_from_cfg_and_args(
     Ok(command_with_args)
 }
 
-pub fn install_dependencie_from_toml(value: String) -> Result<Dependencies, String> {
-    Ok(parse_dependencies(value)?)
+pub async fn install_dependencie_from_toml(value: String) {
+    let dep=parse_dependencies(value).unwrap();
+    for (package, version) in dep.dependencies {
+        let version = version.replace("~", "");
+        println!("getting packages...");
+        let mut dep = get_dependencies_and_dev_dependencies(&package, &version)
+            .await
+            .unwrap();
+        for (k, v) in dep.clone() {
+            let v = v.replace("~", "");
+            let a = get_related_dependencies(&k, &v).await.unwrap();
+            println!("{:?}", a);
+            for (key, value) in a {
+                dep.insert(key, value);
+            }
+        }
+        for (k, v) in dep.clone() {
+            println!("downloading dependency {} ...", k);
+            let v = v.replace("~", "");
+            let link = get_tarball_download_link_and_name(&k, &v).await;
+            match link {
+                Ok(link) => {
+                    download_package(link).await.unwrap();
+                }
+                Err(err) => {
+                    eprintln!("{}", err)
+                }
+            }
+        }
+        println!("downloading dependency {} ...", package);
+        let link = get_tarball_download_link_and_name(&package, &version).await;
+        match link {
+            Ok(link) => {
+                download_package(link).await.unwrap();
+            }
+            Err(err) => {
+                eprintln!("{}", err)
+            }
+        }
+    }
+   
 }
 
 pub async fn install_dependencie_from_arg(args: &[std::string::String]) {
