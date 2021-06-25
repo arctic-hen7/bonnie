@@ -45,6 +45,6 @@ jobs:
               uses: svenstaro/upload-release-action@v1-release
               with:
                   repo_token: ${{ secrets.GITHUB_TOKEN }}
-                  file: target/release/bonnie
+                  file: target/x86_64-unknown-linux-musl/release/bonnie
                   asset_name: bonnie-musl-amd64
                   tag: ${{ github.ref }}
