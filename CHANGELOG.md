@@ -2,23 +2,6 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
-### [0.1.2](https://github.com/arctic-hen7/bonnie/compare/v0.1.1...v0.1.2) (2021-06-25)
-
-
-### Features
-
-* ✨ added environment variable interpolation ([1af7f59](https://github.com/arctic-hen7/bonnie/commit/1af7f59758513c8ed092518466617a61d04bf46f))
-
-
-### Bug Fixes
-
-* 🚑 removed requriement for `env_files` key in config ([b1379e6](https://github.com/arctic-hen7/bonnie/commit/b1379e6685ca4e4746f17c69463f8eb80ff039d6))
-
-
-### Code Refactorings
-
-* 🔥 removed unnecessary `remove` function in command registry ([1d3cf1f](https://github.com/arctic-hen7/bonnie/commit/1d3cf1f37d94318d7323eb11e085f96b0286310c))
-
 ### [0.1.1](https://github.com/arctic-hen7/bonnie/compare/v0.1.0...v0.1.1) (2021-05-02)
 
 
