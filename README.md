@@ -4,7 +4,7 @@
 [![Test](https://github.com/arctic-hen7/bonnie/actions/workflows/ci.yml/badge.svg)](https://github.com/arctic-hen7/bonnie/actions/workflows/ci.yml)
 [![Build and Release](https://github.com/arctic-hen7/bonnie/actions/workflows/cd.yml/badge.svg)](https://github.com/arctic-hen7/bonnie/actions/workflows/cd.yml)
 
-Bonnie is a command aliasing tool. If you have a super-long command that you have to run all the time, Bonnie is for you! Just define the command in `bonnie.toml` at the root of your project, and you're good to go!
+Bonnie is a command aliasing tool with support for custom arguments and environment variables. If you have a super-long command that you have to run all the time, Bonnie is for you! Just define the command in `bonnie.toml` at the root of your project, and you're good to go!
 
 ```toml
 [scripts]
@@ -31,7 +31,26 @@ greet.args = [
 ]
 ```
 
-Now if you run `bonnie greet Donald Knuth` you should get `Greetings Knuth. I see your first name is Donald?`
+Now if you run `bonnie greet Donald Knuth` you should get `Greetings Knuth. I see your first name is Donald?`.
+
+Environment variables can also be interpolated and sourced from specific files, like `.env`:
+
+```toml
+env_files = [
+	".env"
+]
+
+[scripts]
+interpolation.cmd = "echo \"%GREETING %firstname!\""
+interpolation.args = [
+    "firstname"
+]
+interpolation.env_vars = [
+    "GREETING"
+]
+```
+
+Now you can run `bonnie interpolation Donald` and you should see your custom greeting (defined in `.env`) to Donald!
 
 ## Installation
 
@@ -77,6 +96,50 @@ In that example, you denote the script by specifying the system command to run w
 You can if you want to insert one argument more than once, Bonnie just replaces all instances of `%firstname` or the like, so that should work fine (not part of the test suite though).
 
 As yet, Bonnie doesn't support optional arguments or default values, but hopefully that won't inconvenience you too much! If enough people want those features, I'll implement them at some point in the future.
+
+### Environment variable interpolation
+
+Sometimes, you'll want to add a value of an environment variable into a Bonnie command, for example if you've got a variable `$APP_PORT` that defines which port your app runs on and you need to use that in an alias. Bonnie fully supports environment variable interpolation by using long-from notation and the `env_vars` key, just as you would with arguments:
+
+```toml
+[scripts]
+interpolation.cmd = "echo \"%GREETING %firstname!\""
+interpolation.args = [
+    "firstname"
+]
+interpolation.env_vars = [
+    "GREETING"
+]
+```
+
+The above example uses both environment variables and user-provided arguments, but you certainly don't have to use both together in the same command. If you do decide to use them together, any argument that has the same name as an environment variable will be inserted before the environment variable, which is why it's recommended to have your arguments in camelCase and your environment variables in SCREAMING_SNAKE_CASE.
+
+Any environment variables given to the Bonnie process will be available to be interpolated into commands, so for that above example you'd need to run the following:
+
+```
+GREETING="Hello, my dear friend" bonnie interpolation Donald
+```
+
+However, especially in complex projects, environment variables are very often stored in files like `.env`. Bonnie can load these natively with no extra work by using the `env_files` key in `bonnie.toml`:
+
+```toml
+env_files = [
+	".env"
+]
+
+[scripts]
+interpolation.cmd = "echo \"%GREETING %firstname!\""
+interpolation.args = [
+    "firstname"
+]
+interpolation.env_vars = [
+    "GREETING"
+]
+```
+
+Please note the space after the definition of `env_files`, if that's not there TOML will read the config file as invalid!
+
+Now, as long as `.env` exists, Bonnie will interpolate `$GREETING` without any extra input from you! If anything fails, Bonnie will gracefully return an error.
 
 ### Shorthand
 
@@ -128,14 +191,14 @@ There may be cases in which your bonnie config file is in a different directory,
 
 ## Reserved commands
 
-Bonnie does have a few internal commands, and your own scripts defined in `bonnie.toml` cannot conflict with these. You won't be warned about this, Bonnie will just completely ignore your scripts whenever you run one of these commands:
+Bonnie does have a few internal commands, and your own scripts defined in `bonnie.toml` cannot conflict with these. **You won't be warned about this**, Bonnie will just completely ignore your scripts whenever you run one of these commands:
 
 - `bonnie help` - displays the Bonnie documentation
 - `bonnie init` - creates a new `bonnie.toml` file in the current directory (won't override existing files)
 
 ## Motivation
 
-I used to use JavaScript a lot, where I had access to beautiful tools like Yarn and NPM scripts. I learned to love those a lot, and then I switched to Elm and Rust, and I was suddenly deprived of a nice script tool! Make was the most obvious option, but it felt a little dated and cumbersome for something so simple, so I decided to make my own version while Ia was learning Rust! This is that.
+I used to use JavaScript a lot, where I had access to beautiful tools like Yarn and NPM scripts. I learned to love those a lot, and then I switched to Elm and Rust, and I was suddenly deprived of a nice script tool! `Make` was the most obvious option, but it felt a little dated and cumbersome for something so simple, so I decided to make my own version while I was learning Rust! This is that.
 
 ## Aim
 
@@ -151,7 +214,8 @@ Right now, Bonnie is in beta because of the youth of the project and to allow ti
 
 ## Roadmap
 
-- [ ] Add automated tests for the warning system to when too many arguments are provided
+* [x] Support environment variable interpolation
+- [ ] Add automated tests for the warning system when too many arguments are provided
 - [ ] Add automated tests for the command running system
 - [ ] Support inserting all arguments somewhere into a command rather than just at the end
 - [ ] Support a combination of custom arguments and appending arguments
