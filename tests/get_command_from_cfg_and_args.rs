@@ -1,3 +1,5 @@
+// When loading environment variable files in these tests, we assume we're running from the root and so add `src/`
+
 use bonnie_lib::get_command_from_cfg_and_args;
 
 #[test]
@@ -15,6 +17,51 @@ fn returns_correct_command() {
     let command_with_args = get_command_from_cfg_and_args(conf, prog_args);
 
     assert_eq!(command_with_args, Ok(String::from("echo Name")))
+}
+#[test]
+fn returns_correct_command_with_env_var_file() {
+    let prog_args = vec!["".to_string(), "test".to_string()];
+    let conf = String::from(
+        // Note that a space is needed after `env_files`
+        // TODO document the above
+        "
+        env_files = [
+            \"src/.env\"
+        ]
+
+		[scripts]
+		test.cmd = \"echo %GREETING\"
+		test.env_vars = [
+            \"GREETING\"
+        ]
+	",
+    );
+    let command_with_args = get_command_from_cfg_and_args(conf, prog_args);
+
+    assert_eq!(command_with_args, Ok(String::from("echo Hello, my dear friend")))
+}
+#[test]
+fn returns_correct_command_with_args_and_env_vars() {
+    let prog_args = vec!["".to_string(), "test".to_string(), "Name".to_string()];
+    let conf = String::from(
+        "
+        env_files = [
+            \"src/.env\"
+        ]
+
+		[scripts]
+		test.cmd = \"echo %GREETING %name!\"
+        test.args = [
+            \"name\"
+        ]
+		test.env_vars = [
+            \"GREETING\"
+        ]
+	",
+    );
+    let command_with_args = get_command_from_cfg_and_args(conf, prog_args);
+
+    assert_eq!(command_with_args, Ok(String::from("echo Hello, my dear friend Name!")))
 }
 #[test]
 fn returns_correct_command_with_shorthand() {
@@ -145,5 +192,110 @@ fn returns_error_on_argument_not_inserted() {
     let command_with_args = get_command_from_cfg_and_args(conf, prog_args);
     if command_with_args.is_ok() {
         panic!("Didn't return an error on argument not inserted.");
+    }
+}
+#[test]
+fn returns_error_on_env_var_not_inserted() {
+    let prog_args = vec!["".to_string(), "test".to_string()];
+    let conf = String::from(
+        "
+		env_files = [
+            \"src/.env\"
+        ]
+
+		[scripts]
+		test.cmd = \"echo %GREEETING\" # Misspelt this line
+		test.env_vars = [
+            \"GREETING\"
+        ]
+	",
+    );
+    let command_with_args = get_command_from_cfg_and_args(conf, prog_args);
+    if command_with_args.is_ok() {
+        panic!("Didn't return an error on environment variable not inserted.");
+    }
+}
+#[test]
+fn returns_error_on_attempted_insertion_of_unrequested_env_var() {
+    let prog_args = vec!["".to_string(), "test".to_string()];
+    let conf = String::from(
+        "
+		env_files = [
+            \"src/.env\"
+        ]
+
+		[scripts]
+		test.cmd = \"echo %SHORTGREETING\" # Tried to interpolate unrequested variable that does exist
+		test.env_vars = [
+            \"GREETING\"
+        ]
+	",
+    );
+    let command_with_args = get_command_from_cfg_and_args(conf, prog_args);
+    if command_with_args.is_ok() {
+        panic!("Didn't return an error on attempted insertion of unrequested environment variable.");
+    }
+}
+#[test]
+fn returns_error_on_env_file_not_found() {
+    let prog_args = vec!["".to_string(), "test".to_string()];
+    let conf = String::from(
+        "
+        env_files = [
+            \"src/.envv\" # Misspelt this line
+        ]
+
+		[scripts]
+		test.cmd = \"echo %GREETING\"
+		test.env_vars = [
+            \"GREETING\"
+        ]
+	",
+    );
+    let command_with_args = get_command_from_cfg_and_args(conf, prog_args);
+    if command_with_args.is_ok() {
+        panic!("Didn't return an error on environment variable file not found.");
+    }
+}
+#[test]
+fn returns_error_on_invalid_env_file() {
+    let prog_args = vec!["".to_string(), "test".to_string()];
+    let conf = String::from(
+        "
+        env_files = [
+            \"src/.invalidenv\" # This file exists, but contains invalid characters
+        ]
+
+		[scripts]
+		test.cmd = \"echo %GREETING\"
+		test.env_vars = [
+            \"GREETING\"
+        ]
+	",
+    );
+    let command_with_args = get_command_from_cfg_and_args(conf, prog_args);
+    if command_with_args.is_ok() {
+        panic!("Didn't return an error on invalid environment variable file.");
+    }
+}
+#[test]
+fn returns_error_on_env_var_not_found() {
+    let prog_args = vec!["".to_string(), "test".to_string()];
+    let conf = String::from(
+        "
+        env_files = [
+            \"src/.env\"
+        ]
+
+		[scripts]
+		test.cmd = \"echo %GREETING\"
+		test.env_vars = [
+            \"GREEETING\" # Misspelt this line
+        ]
+	",
+    );
+    let command_with_args = get_command_from_cfg_and_args(conf, prog_args);
+    if command_with_args.is_ok() {
+        panic!("Didn't return an error on environment variable not found (did you define $GREEETING at some point?).");
     }
 }
