@@ -8,8 +8,18 @@ pub struct Command<'a> {
     cmd: &'a str,
 }
 impl<'a> Command<'a> {
-    pub fn new(name: &'a str, args: Vec<String>, env_vars: Vec<String>, cmd: &'a str) -> Command<'a> {
-        Command { name, args, env_vars, cmd }
+    pub fn new(
+        name: &'a str,
+        args: Vec<String>,
+        env_vars: Vec<String>,
+        cmd: &'a str,
+    ) -> Command<'a> {
+        Command {
+            name,
+            args,
+            env_vars,
+            cmd,
+        }
     }
     pub fn run(command: &str) -> Result<(), String> {
         // Run the given command (accounting for architecture)
@@ -88,7 +98,8 @@ impl<'a> Command<'a> {
                 let arg_value = &arg_values[idx]; // The arrays are the same length, see above check
                                                   // All arguments are shown in the command string as `%name` or the like, so we get that whole string
                 let arg_with_sign = "%".to_string() + arg;
-                let new_command = command_with_args_and_env_vars.replace(&arg_with_sign, &arg_value);
+                let new_command =
+                    command_with_args_and_env_vars.replace(&arg_with_sign, &arg_value);
                 // Run a quick check to make sure we've changed something (otherwise there's probably a typo in the command)
                 // We return an error here because substituting '%arg_name' into the command may result in undefined behaviour
                 if new_command == command_with_args_and_env_vars {

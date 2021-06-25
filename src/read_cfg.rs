@@ -1,5 +1,5 @@
-use std::collections::HashMap;
 use serde::Deserialize;
+use std::collections::HashMap;
 
 use crate::command::Command;
 use crate::commands_registry::CommandsRegistry;
@@ -25,7 +25,7 @@ pub struct RawConfig {
 pub struct Script {
     args: Vec<String>, // User-provided arguments
     cmd: String,
-    env_vars: Vec<String> // Environment variables to interpolate
+    env_vars: Vec<String>, // Environment variables to interpolate
 }
 
 #[derive(Deserialize, Debug)]
@@ -35,7 +35,7 @@ enum RawScript {
     Complex {
         args: Option<Vec<String>>,
         cmd: String, // The user must always specify an actual command to run
-        env_vars: Option<Vec<String>>
+        env_vars: Option<Vec<String>>,
     },
     Simple(String), // This variant is shorthand when a command has no arguments or interpolation
 }
@@ -58,7 +58,7 @@ pub fn parse_cfg(cfg_string: String) -> Result<Config, String> {
     // If no environment variable files are being requested, we just make the array empty
     let env_files = match raw_cfg.env_files {
         Some(env_files) => env_files,
-        None => Vec::new()
+        None => Vec::new(),
     };
 
     // Parse each of the requested environment variable files
@@ -68,7 +68,7 @@ pub fn parse_cfg(cfg_string: String) -> Result<Config, String> {
         // TODO check how these paths are formed (relativity etc.)
         let res = dotenv::from_filename(&env_file);
         if res.is_err() {
-            return Err(format!("Requested environment variable file '{}' could not be loaded. Either the file doesn't exist, Bonnie doesn't have the permissions necessary to access it, or something inside it can't be processed.", &env_file))
+            return Err(format!("Requested environment variable file '{}' could not be loaded. Either the file doesn't exist, Bonnie doesn't have the permissions necessary to access it, or something inside it can't be processed.", &env_file));
         }
     }
 
@@ -80,21 +80,25 @@ pub fn parse_cfg(cfg_string: String) -> Result<Config, String> {
 fn parse_script(unparsed_script: &RawScript) -> Script {
     match unparsed_script {
         // When processing a complex script, any missing values are added as empty
-        RawScript::Complex { args, cmd, env_vars } => Script {
+        RawScript::Complex {
+            args,
+            cmd,
+            env_vars,
+        } => Script {
             args: match args {
                 Some(args) => args.to_vec(),
-                None => Vec::new()
+                None => Vec::new(),
             },
             cmd: cmd.to_string(),
             env_vars: match env_vars {
                 Some(env_vars) => env_vars.to_vec(),
-                None => Vec::new()
-            }
+                None => Vec::new(),
+            },
         },
         RawScript::Simple(cmd) => Script {
             args: Vec::new(), // A simple script can't specify these options, so they'll always be empty
             cmd: cmd.to_string(),
-            env_vars: Vec::new() // A simple script can't specify these options, so they'll always be empty
+            env_vars: Vec::new(), // A simple script can't specify these options, so they'll always be empty
         },
     }
 }
@@ -103,7 +107,15 @@ pub fn get_commands_registry_from_cfg(cfg: &Config) -> CommandsRegistry {
     let mut commands_registry = CommandsRegistry::new();
 
     for (name, script) in cfg.scripts.iter() {
-        commands_registry.add(name, Command::new(name, script.args.to_vec(), script.env_vars.to_vec(), &script.cmd))
+        commands_registry.add(
+            name,
+            Command::new(
+                name,
+                script.args.to_vec(),
+                script.env_vars.to_vec(),
+                &script.cmd,
+            ),
+        )
     }
 
     commands_registry

@@ -38,7 +38,10 @@ fn returns_correct_command_with_env_var_file() {
     );
     let command_with_args = get_command_from_cfg_and_args(conf, prog_args);
 
-    assert_eq!(command_with_args, Ok(String::from("echo Hello, my dear friend")))
+    assert_eq!(
+        command_with_args,
+        Ok(String::from("echo Hello, my dear friend"))
+    )
 }
 #[test]
 fn returns_correct_command_with_args_and_env_vars() {
@@ -61,7 +64,10 @@ fn returns_correct_command_with_args_and_env_vars() {
     );
     let command_with_args = get_command_from_cfg_and_args(conf, prog_args);
 
-    assert_eq!(command_with_args, Ok(String::from("echo Hello, my dear friend Name!")))
+    assert_eq!(
+        command_with_args,
+        Ok(String::from("echo Hello, my dear friend Name!"))
+    )
 }
 #[test]
 fn returns_correct_command_with_shorthand() {
@@ -233,7 +239,9 @@ fn returns_error_on_attempted_insertion_of_unrequested_env_var() {
     );
     let command_with_args = get_command_from_cfg_and_args(conf, prog_args);
     if command_with_args.is_ok() {
-        panic!("Didn't return an error on attempted insertion of unrequested environment variable.");
+        panic!(
+            "Didn't return an error on attempted insertion of unrequested environment variable."
+        );
     }
 }
 #[test]
