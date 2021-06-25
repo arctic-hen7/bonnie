@@ -15,10 +15,6 @@ impl<'a> CommandsRegistry<'a> {
         self.map.insert(name.to_string(), command);
     }
 
-    pub fn remove(&mut self, name: &str) {
-        self.map.remove(&name.to_string());
-    }
-
     pub fn get(&self, name: &str) -> Result<&Command, String> {
         let entry = self.map.get(name);
         let entry = match entry {
