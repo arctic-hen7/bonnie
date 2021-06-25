@@ -1,13 +1,15 @@
+use std::env;
 use std::process::Command as OsCommand;
 
 pub struct Command<'a> {
     name: &'a str,
     args: Vec<String>, // Because converting a vector of &str to Strings is really annoying
+    env_vars: Vec<String>,
     cmd: &'a str,
 }
 impl<'a> Command<'a> {
-    pub fn new(name: &'a str, args: Vec<String>, cmd: &'a str) -> Command<'a> {
-        Command { name, args, cmd }
+    pub fn new(name: &'a str, args: Vec<String>, env_vars: Vec<String>, cmd: &'a str) -> Command<'a> {
+        Command { name, args, env_vars, cmd }
     }
     pub fn run(command: &str) -> Result<(), String> {
         // Run the given command (accounting for architecture)
@@ -41,7 +43,7 @@ impl<'a> Command<'a> {
             )
         }
     }
-    pub fn insert_args(&self, arg_values: &[String]) -> Result<String, String> {
+    pub fn insert_args_and_env_vars(&self, arg_values: &[String]) -> Result<String, String> {
         // Check if this command ends with a double percent sign (meaning we should append all given arguments)
         let append_args = self.cmd.ends_with("%%");
         // Ensure the user hasn't tried to append all arguments and have custom ones as well (not yet implemented)
@@ -75,23 +77,21 @@ impl<'a> Command<'a> {
                 num_given_args=&arg_values.len()
             );
         }
-        let mut command_with_args: String = self.cmd.to_string();
+        let mut command_with_args_and_env_vars: String = self.cmd.to_string();
 
         if append_args {
             // Replace the special sequence '%%' with all the arguments joined together
-            command_with_args = self.cmd.replace("%%", &arg_values.join(" "));
-
-            Ok(command_with_args)
+            command_with_args_and_env_vars = self.cmd.replace("%%", &arg_values.join(" "));
         } else {
             // Loop through all the arguments the command takes, substituting in each one
             for (idx, arg) in self.args.iter().enumerate() {
                 let arg_value = &arg_values[idx]; // The arrays are the same length, see above check
                                                   // All arguments are shown in the command string as `%name` or the like, so we get that whole string
                 let arg_with_sign = "%".to_string() + arg;
-                let new_command = command_with_args.replace(&arg_with_sign, &arg_value);
+                let new_command = command_with_args_and_env_vars.replace(&arg_with_sign, &arg_value);
                 // Run a quick check to make sure we've changed something (otherwise there's probably a typo in the command)
-                // We return an error here because substituting '%arg' into the command may result in undefined behaviour
-                if new_command == command_with_args {
+                // We return an error here because substituting '%arg_name' into the command may result in undefined behaviour
+                if new_command == command_with_args_and_env_vars {
                     return Err(
                         format!(
                             "The argument '{arg_name}' could not be substituted into the command '{command}'. This probably means there's a typo somewhere in your command definition.",
@@ -100,10 +100,38 @@ impl<'a> Command<'a> {
                         )
                     );
                 }
-                command_with_args = new_command;
+                command_with_args_and_env_vars = new_command;
             }
-
-            Ok(command_with_args)
         }
+
+        // Now we interpolate environment variables in a similar way
+        // Note that if the user defines an argument and environment variable with the same name, the argument will be evaluated first
+
+        // Loop through all tghe environment variables the command needs
+        for env_var_name in self.env_vars.iter() {
+            // Load the environment variable
+            let env_var = env::var(env_var_name);
+            let env_var = match env_var {
+                Ok(env_var) => env_var,
+                Err(_) => return Err(format!("The environment variable '{}' couldn't be loaded. This means it either hasn't been defined (you may need to load another environment variable file) or contains invalid characters.", env_var_name))
+            };
+            // Interpolate it into the command itself
+            let to_replace = "%".to_string() + env_var_name;
+            let new_command = command_with_args_and_env_vars.replace(&to_replace, &env_var);
+            // Run a quick check to make sure we've changed something (otherwise there's probably a typo in the command)
+            // We return an error here because substituting '%ENV_VAR_NAME' into the command may result in undefined behaviour
+            if new_command == command_with_args_and_env_vars {
+                return Err(
+                    format!(
+                        "The environment variable '{env_var_name}' could not be substituted into the command '{command}'. This probably means there's a typo somewhere in your command definition.",
+                        env_var_name=&env_var_name,
+                        command=&self.name
+                    )
+                );
+            }
+            command_with_args_and_env_vars = new_command;
+        }
+
+        Ok(command_with_args_and_env_vars)
     }
 }

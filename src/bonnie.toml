@@ -1,9 +1,20 @@
+env_files = [
+    ".env"
+]
+
 [scripts]
 
 test.cmd = "echo %firstname %lastname"
 test.args = [
 	"firstname",
 	"lastname"
+]
+interpolation.cmd = "echo \"%GREETING %firstname!\""
+interpolation.args = [
+    "firstname"
+]
+interpolation.env_vars = [
+    "GREETING"
 ]
 cat = "cat hello.txt"
 long = "sleep 5 && echo Test"

@@ -18,7 +18,7 @@ pub fn get_command_from_cfg_and_args(
     cfg_string: String,
     prog_args: Vec<String>,
 ) -> Result<String, String> {
-    let cfg = parse_cfg(cfg_string)?;
+    let cfg = parse_cfg(cfg_string)?; // This also loads necessary environment variable fiels
     let registry = get_commands_registry_from_cfg(&cfg);
 
     // Extract the command the user wants to run and the arguments they're providing to it
@@ -31,9 +31,9 @@ pub fn get_command_from_cfg_and_args(
     let args = &prog_args[2..]; // Any arguments to that command the user has provided
 
     let command = registry.get(cmd)?;
-    let command_with_args = command.insert_args(&args.to_vec())?;
+    let command_with_args_and_env_vars = command.insert_args_and_env_vars(&args.to_vec())?;
 
-    Ok(command_with_args)
+    Ok(command_with_args_and_env_vars)
 }
 
 // Extracts the config from the TOML file at the given path
