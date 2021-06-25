@@ -3,9 +3,9 @@ name: Test
 on: [push, pull_request]
 
 jobs:
-  build-release:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Test
-        run: cargo check && cargo fmt -- --check && cargo clippy && cargo test
+    build-release:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v2
+            - name: Test
+              run: cargo check && cargo fmt -- --check && cargo clippy && cargo test
