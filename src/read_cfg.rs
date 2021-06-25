@@ -15,7 +15,7 @@ pub struct Config {
 
 #[derive(Deserialize, Debug)]
 pub struct RawConfig {
-    env_files: Vec<String>,
+    env_files: Option<Vec<String>>,
     scripts: HashMap<String, RawScript>,
 }
 
@@ -55,8 +55,14 @@ pub fn parse_cfg(cfg_string: String) -> Result<Config, String> {
         parsed_scripts.insert(name, parse_script(&script));
     }
 
+    // If no environment variable files are being requested, we just make the array empty
+    let env_files = match raw_cfg.env_files {
+        Some(env_files) => env_files,
+        None => Vec::new()
+    };
+
     // Parse each of the requested environment variable files
-    for env_file in raw_cfg.env_files {
+    for env_file in env_files {
         // Load the file
         // This will be loaded for the Bonnie program, which allows us to interpolate them into commands
         // TODO check how these paths are formed (relativity etc.)
