@@ -23,6 +23,15 @@ jobs:
                       asset_name: bonnie-windows-amd64
         steps:
             - uses: actions/checkout@v2
+            - name: Read CHANGELOG
+              id: read_release
+              shell: bash
+              run: |
+                  r=$(cat CHANGELOG.md)
+                  r="${r//'%'/'%25'}"                               # Multiline escape sequences for %
+                  r="${r//$'\n'/'%0A'}"                             # Multiline escape sequences for '\n'
+                  r="${r//$'\r'/'%0D'}"                             # Multiline escape sequences for '\r'
+                  echo "::set-output name=RELEASE_BODY::$r"         # Set environment variable
             - name: Build
               run: cargo build --release --locked
             - name: Release binary
@@ -32,11 +41,21 @@ jobs:
                   file: target/release/${{ matrix.artifact_name }}
                   asset_name: ${{ matrix.asset_name }}
                   tag: ${{ github.ref }}
+                  body: ${{ steps.read_release.outputs.RELEASE_BODY }}
     # This builds and releases for musl
     musl-build-release:
         runs-on: ubuntu-latest # We cross-compile from Ubuntu
         steps:
             - uses: actions/checkout@v2
+            - name: Read CHANGELOG
+              id: read_release
+              shell: bash
+              run: |
+                  r=$(cat CHANGELOG.md)
+                  r="${r//'%'/'%25'}"                               # Multiline escape sequences for %
+                  r="${r//$'\n'/'%0A'}"                             # Multiline escape sequences for '\n'
+                  r="${r//$'\r'/'%0D'}"                             # Multiline escape sequences for '\r'
+                  echo "::set-output name=RELEASE_BODY::$r"         # Set environment variable
             - name: Install musl toolchain
               run: rustup target add x86_64-unknown-linux-musl
             - name: Build
@@ -48,3 +67,4 @@ jobs:
                   file: target/x86_64-unknown-linux-musl/release/bonnie
                   asset_name: bonnie-musl-amd64
                   tag: ${{ github.ref }}
+                  body: ${{ steps.read_release.outputs.RELEASE_BODY }}
