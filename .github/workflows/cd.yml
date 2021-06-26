@@ -26,7 +26,7 @@ jobs:
             - name: Build
               run: cargo build --release --locked
             - name: Release binary
-              uses: svenstaro/upload-release-action@v1-release
+              uses: svenstaro/upload-release-action@v2
               with:
                   repo_token: ${{ secrets.GITHUB_TOKEN }}
                   file: target/release/${{ matrix.artifact_name }}
