@@ -54,17 +54,27 @@ Now you can run `bonnie interpolation Donald` and you should see your custom gre
 
 ## Installation
 
-Bonnie is built in [Rust](https://rust-lang.org), and you can either download a pre-compiled binary from [here](https://github.com/arctic-hen7/bonnie/releases) if you're running on one of the three major OSes on a 64-bit architecture, or you can clone this repository and build the code yourself. I'm happy to add more binaries for more OSes by request, please file an issue for the matter.
+Bonnie is built in [Rust](https://rust-lang.org), and you can either download a pre-compiled binary from [here](https://github.com/arctic-hen7/bonnie/releases) if you're running on one of the three major OSes on a 64-bit architecture or musl, or you can clone this repository and build the code yourself. I'm happy to add more binaries for more OSes by request, please file an issue for the matter.
 
 ### Using a pre-compiled binary
 
-If you head over to the [releases page](https://github.com/arctic-hen7/bonnie/releases) on this repository, you'll be able to download binaries for the most recent version of Bonnie for the three major operating systems (Linux, MacOS, and Windows). GitHub Actions builds these automatically whenever a new tag is pushed, though I personally develop on Linux, so if the Windows or MacOS binaries don't work for some reason, please let me know! After downloading the binary, it should work immediately, though you may need to allow executing it as a program on Unix systems with `chmod +x ./bonnie-linux-amd64` (or whatever your download is called). Then, you can move it to a location that suits you, like `/usr/local/bin` on Linux so you can execute it from anywhere on your system.
+If you head over to the [releases page](https://github.com/arctic-hen7/bonnie/releases) on this repository, you'll be able to download binaries for the most recent version of Bonnie for the three major operating systems and musl if you're on Alpine (Linux, MacOS, and Windows). GitHub Actions builds these automatically whenever a new tag is pushed, though I personally develop on Linux, so if the Windows or MacOS binaries don't work for some reason, please let me know! After downloading the binary, it should work immediately, though you may need to allow executing it as a program on Unix systems with `chmod +x ./bonnie-linux-amd64` (or whatever your download is called). Then, you can move it to a location that suits you, like `/usr/local/bin` on Linux so you can execute it from anywhere on your system.
 
 ### Building manually
 
 1. Clone this repository to your local machine.
 2. Ensure you have Rust and Cargo installed.
 3. Run `cargo build --release && cp target/releases/bonnie bonnie`. The built executable will be at `./bonnie`. You can then copy this to somewhere you put binaries, like `/usr/local/bin`.
+
+### Installing in Docker
+
+Bonnie provides pre-built executables for Linux and Musl (the one you'll need on Alpine), which can be easily installed in a Dockerfile with this command:
+
+```Dockerfile
+RUN curl -L https://github.com/arctic-hen7/bonnie/releases/download/[VERSION]/bonnie-[OS]-amd64
+```
+
+Just replace `[VERSION]` with the latest version (see the [releases page](https://github.com/arctic-hen7/bonnie/releases)) and `[OS]` with the operating system you want the binary for (one of: `windows`, `macos`, `linux`, or `musl`).
 
 ## Syntax
 
