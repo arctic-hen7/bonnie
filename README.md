@@ -2,7 +2,7 @@
 
 [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.0-4baaaa.svg)](CODE_OF_CONDUCT.md)
 [![Test](https://github.com/arctic-hen7/bonnie/actions/workflows/ci.yml/badge.svg)](https://github.com/arctic-hen7/bonnie/actions/workflows/ci.yml)
-[![Build and Release](https://github.com/arctic-hen7/bonnie/actions/workflows/cd.yml/badge.svg)](https://github.com/arctic-hen7/bonnie/actions/workflows/cd.yml)
+[![Build and Release](https://github.com/arctic-hen7/bonnie/actions/workflows/cd.yml/badge.svg)](https://github.com/arctic-hen7/bonnie/actions/workflows/cd.yml) [![Join the chat at https://gitter.im/bonnie-cli/community](https://badges.gitter.im/bonnie-cli/community.svg)](https://gitter.im/bonnie-cli/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 Bonnie is a command aliasing tool with support for custom arguments and environment variables. If you have a super-long command that you have to run all the time, Bonnie is for you! Just define the command in `bonnie.toml` at the root of your project, and you're good to go!
 
