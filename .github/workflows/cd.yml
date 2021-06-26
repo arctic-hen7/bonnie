@@ -49,4 +49,4 @@ jobs:
                   file: target/x86_64-unknown-linux-musl/release/bonnie
                   asset_name: bonnie-musl-amd64
                   tag: ${{ github.ref }}
-                  body: "See [CHANGELOG.md](./CHANGELOG.md) details."
+                  body: "See [CHANGELOG.md](./CHANGELOG.md#${{ github.ref }}) details."
