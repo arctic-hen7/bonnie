@@ -7,3 +7,4 @@ url=$(curl -s https://api.github.com/repos/arctic-hen7/bonnie/releases/latest | 
 
 # Download the latest release of Bonnie for musl and put it in `/bin`
 curl -L $url > /bin/bonnie
+chmod +x /bin/bonnie
