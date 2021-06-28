@@ -5,9 +5,11 @@ mod command;
 mod commands_registry;
 mod help_page;
 mod read_cfg;
+mod version;
 use crate::command::Command;
 use crate::help_page::BONNIE_HELP_PAGE;
 use crate::read_cfg::{get_commands_registry_from_cfg, parse_cfg};
+use crate::version::BONNIE_VERSION;
 
 pub const DEFAULT_BONNIE_CFG_PATH: &str = "./bonnie.toml";
 
@@ -69,7 +71,8 @@ pub fn init() -> Result<(), String> {
         // Create a new `bonnie.toml` file
         let output = fs::write(
             "./bonnie.toml",
-            "[scripts]
+            "version=\"".to_string() + BONNIE_VERSION + "\"
+[scripts]
 start = \"echo \\\"No start script yet.\\\"\"
 ",
         );
