@@ -56,7 +56,7 @@ impl Version {
 pub fn get_version_parts(version_str: &str) -> Result<Version, String> {
     let split: Vec<&str> = version_str.split('.').collect();
     // Get each component of that
-    let patch = split.get(0)
+    let patch = split.get(2)
         .ok_or_else(|| String::from(
             "Couldn't extract the patch version number from the given version string. If the version string in your Bonnie configuration file is definitely of the form 'x.y.z', you should report this as a bug."
         ))?
@@ -72,7 +72,7 @@ pub fn get_version_parts(version_str: &str) -> Result<Version, String> {
         .map_err(|_| String::from(
             "Couldn't serialize the minor version number from the given version string into an integer. If the version string in your Bonnie configuration file is definitely of the form 'x.y.z', where each of those are integers, you should report this as a bug."
         ))?;
-    let major = split.get(2)
+    let major = split.get(0)
         .ok_or_else(|| String::from(
             "Couldn't extract the major version number from the given version string. If the version string in your Bonnie configuration file is definitely of the form 'x.y.z', you should report this as a bug."
         ))?
