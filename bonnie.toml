@@ -1,7 +1,8 @@
 [scripts]
 build = "cargo build"
-test = "cargo test"
+test = "cargo watch -x \"test\""
 dev = "cargo watch -x \"run\"" # Run `cargo install cargo-watch` to add Cargo Watch for this
+check = "cargo check && cargo fmt -- --check && cargo clippy && cargo test" # This will be run on CI as well
 
 # Releases the project (maintainers only)
 # We commit all staged files so we can manually bump the Cargo version
