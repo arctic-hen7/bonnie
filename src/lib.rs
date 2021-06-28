@@ -71,7 +71,8 @@ pub fn init() -> Result<(), String> {
         // Create a new `bonnie.toml` file
         let output = fs::write(
             "./bonnie.toml",
-            "version=\"".to_string() + BONNIE_VERSION + "\"
+            "version = \"".to_string() + BONNIE_VERSION + "\"
+
 [scripts]
 start = \"echo \\\"No start script yet.\\\"\"
 ",
