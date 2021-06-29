@@ -7,7 +7,7 @@ mod help_page;
 mod read_cfg;
 mod version;
 use crate::command::Command;
-use crate::help_page::BONNIE_HELP_PAGE;
+use crate::help_page::get_help_page;
 use crate::read_cfg::{get_commands_registry_from_cfg, parse_cfg};
 pub use crate::version::BONNIE_VERSION;
 
@@ -88,5 +88,5 @@ start = \"echo \\\"No start script yet.\\\"\"
     }
 }
 pub fn help() {
-    println!("{}", BONNIE_HELP_PAGE);
+    println!("{}", get_help_page());
 }

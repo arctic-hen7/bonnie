@@ -1,14 +1,19 @@
 // This file just defines a single constant for the help page that'll be served to users with `bonnie help`
 
-pub const BONNIE_HELP_PAGE: &str = "
+use crate::version::BONNIE_VERSION;
+
+pub fn get_help_page() -> String {
+"
 Example Usage:
     Commands can be specified in bonnie.toml:
 
+        version = \"".to_string() + BONNIE_VERSION + "\"
         [scripts]
         greet.cmd = \"echo \\\"Greetings %lastname. I see your first name is %firstname?\\\"\"
 
         Arguments can be parsed into a command as well:
 
+        version = \"" + BONNIE_VERSION + "\"
         [scripts]
         greet.args = [
             \"firstname\",
@@ -20,11 +25,13 @@ Example Usage:
 
     Arguments can be used multiple times in a command:
 
+        version = \"" + BONNIE_VERSION + "\"
         [scripts]
         greet.cmd = \"echo \"Greetings %lastname. I see your first name is %firstname?\" and not %lastname\"
 
     If a script doesn't need any arguments, you can use shorthand syntax:
 
+        version = \"" + BONNIE_VERSION + "\"
         [scripts]
         foobar = \"echo Hello World\"
 
@@ -33,11 +40,13 @@ Example Usage:
     Appending arguments:
         To append arguments at the end of a script, use shorthand syntax and add a '%%' to the end of the command:
 
+        version = \"" + BONNIE_VERSION + "\"
         [scripts]
         dc = \"docker-compose --env-file .my.env %%\"
 
     Environment variables can also be inserted from custom files, like .env:
 
+        version = \"" + BONNIE_VERSION + "\"
         env_files = [
             \".env\"
         ]
@@ -53,4 +62,5 @@ Example Usage:
 
     To run that, use normal arguments syntax:
         'bonnie interpolation Donald'.
-";
+"
+}
