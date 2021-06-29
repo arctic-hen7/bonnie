@@ -1,6 +1,6 @@
 use std::env;
 
-use bonnie_lib::{get_cfg, get_cfg_path, get_command_from_cfg_and_args, help, init, run_cmd};
+use bonnie_lib::{get_cfg, get_cfg_path, get_command_from_cfg_and_args, help, init, run_cmd, BONNIE_VERSION};
 
 // TODO colorise output?
 
@@ -35,7 +35,8 @@ fn main() {
         };
 
         // Get the command to run from the arguments the user gave and the configuration file
-        let command_with_args = get_command_from_cfg_and_args(cfg_string, prog_args);
+        // We parse the current version in directly here (only extracted as an argument for testing purposes)
+        let command_with_args = get_command_from_cfg_and_args(cfg_string, prog_args, BONNIE_VERSION);
         let command_with_args = match command_with_args {
             Ok(command_with_args) => command_with_args,
             Err(err) => return eprintln!("{}", err),

@@ -9,7 +9,7 @@ mod version;
 use crate::command::Command;
 use crate::help_page::BONNIE_HELP_PAGE;
 use crate::read_cfg::{get_commands_registry_from_cfg, parse_cfg};
-use crate::version::BONNIE_VERSION;
+pub use crate::version::BONNIE_VERSION;
 
 pub const DEFAULT_BONNIE_CFG_PATH: &str = "./bonnie.toml";
 
@@ -19,8 +19,9 @@ pub const DEFAULT_BONNIE_CFG_PATH: &str = "./bonnie.toml";
 pub fn get_command_from_cfg_and_args(
     cfg_string: String,
     prog_args: Vec<String>,
+    version_str: &str // Extracted for testing purposes
 ) -> Result<String, String> {
-    let cfg = parse_cfg(cfg_string)?; // This also loads necessary environment variable fiels
+    let cfg = parse_cfg(cfg_string, version_str)?; // This also loads necessary environment variable files
     let registry = get_commands_registry_from_cfg(&cfg);
 
     // Extract the command the user wants to run and the arguments they're providing to it

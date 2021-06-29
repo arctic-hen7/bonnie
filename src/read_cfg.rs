@@ -1,7 +1,7 @@
 use serde::Deserialize;
 use std::collections::HashMap;
 
-use crate::version::{BONNIE_VERSION, get_version_parts, VersionCompatibility, VersionDifference};
+use crate::version::{get_version_parts, VersionCompatibility, VersionDifference};
 use crate::command::Command;
 use crate::commands_registry::CommandsRegistry;
 
@@ -43,36 +43,37 @@ enum RawScript {
 }
 
 // Parses a given config string (extracted for testing purposes)
-pub fn parse_cfg(cfg_string: String) -> Result<Config, String> {
+// The Bonnie version is also extracted for testing
+pub fn parse_cfg(cfg_string: String, bonnie_version_str: &str) -> Result<Config, String> {
     // Deserialise the config file
     let raw_cfg: Result<RawConfig, toml::de::Error> = toml::from_str(&cfg_string);
     let raw_cfg = match raw_cfg {
         Ok(raw_cfg) => raw_cfg,
         // We explicitly handle the missing version for backward-compatibility before 0.2.0 and because it's an easy mistake to make
-        Err(err) if err.to_string().starts_with("missing field `version`") => return Err("Your Bonnie configuration file appears to be missing a 'version' key. From Bonnie 0.2.0 onwards, this key is mandatory for compatibility reasons. Please add `version = \"".to_string() + BONNIE_VERSION + "\"` to the top of your Bonnie configuration file."),
+        Err(err) if err.to_string().starts_with("missing field `version`") => return Err("Your Bonnie configuration file appears to be missing a 'version' key. From Bonnie 0.2.0 onwards, this key is mandatory for compatibility reasons. Please add `version = \"".to_string() + bonnie_version_str + "\"` to the top of your Bonnie configuration file."),
         Err(_) => return Err(String::from("Invalid Bonnie configuration file."))
     };
 
     // Split the program and config file versions into their components
-    let bonnie_version = get_version_parts(BONNIE_VERSION)?;
+    let bonnie_version = get_version_parts(bonnie_version_str)?;
     let cfg_version = get_version_parts(&raw_cfg.version)?;
     // Compare the two and warn/error appropriately
     let compat = bonnie_version.is_compatible_with(&cfg_version);
     match compat {
-        VersionCompatibility::DifferentBetaVersion(version_difference) => return Err("The provided configuration file is incompatible with this version of Bonnie. You are running Bonnie v".to_string() + BONNIE_VERSION + ", but the configuration file expects Bonnie v" + &raw_cfg.version + ". " + match version_difference {
+        VersionCompatibility::DifferentBetaVersion(version_difference) => return Err("The provided configuration file is incompatible with this version of Bonnie. You are running Bonnie v".to_string() + bonnie_version_str + ", but the configuration file expects Bonnie v" + &raw_cfg.version + ". " + match version_difference {
             VersionDifference::TooNew => "This issue can be fixed by updating Bonnie to the appropriate version, which can be done at https://github.com/arctic-hen7/bonnie/releases.",
             VersionDifference::TooOld => "This issue can be fixed by updating the configuration file, which may require changing some of its syntax (see https://github.com/arctic-hen7/bonnie for how to do so). Alternatively, you can download an older version of Bonnie from https://github.com/arctic-hen7/bonnie/releases (not recommended)."
         }),
-        VersionCompatibility::DifferentMajor(version_difference) => return Err("The provided configuration file is incompatible with this version of Bonnie. You are running Bonnie v".to_string() + BONNIE_VERSION + ", but the configuration file expects Bonnie v" + &raw_cfg.version + ". " + match version_difference {
+        VersionCompatibility::DifferentMajor(version_difference) => return Err("The provided configuration file is incompatible with this version of Bonnie. You are running Bonnie v".to_string() + bonnie_version_str + ", but the configuration file expects Bonnie v" + &raw_cfg.version + ". " + match version_difference {
             VersionDifference::TooNew => "This issue can be fixed by updating Bonnie to the appropriate version, which can be done at https://github.com/arctic-hen7/bonnie/releases.",
             VersionDifference::TooOld => "This issue can be fixed by updating the configuration file, which may require changing some of its syntax (see https://github.com/arctic-hen7/bonnie for how to do so). Alternatively, you can download an older version of Bonnie from https://github.com/arctic-hen7/bonnie/releases (not recommended)."
         }),
         // These next two are just warnings, not errors
-        VersionCompatibility::DifferentMinor(version_difference) => println!("{}", "The provided configuration file is compatible with this version of Bonnie, but has a different minor version. You are running Bonnie v".to_string() + BONNIE_VERSION + ", but the configuration file expects Bonnie v" + &raw_cfg.version + ". " + match version_difference {
+        VersionCompatibility::DifferentMinor(version_difference) => println!("{}", "The provided configuration file is compatible with this version of Bonnie, but has a different minor version. You are running Bonnie v".to_string() + bonnie_version_str + ", but the configuration file expects Bonnie v" + &raw_cfg.version + ". " + match version_difference {
             VersionDifference::TooNew => "This issue can be fixed by updating Bonnie to the appropriate version, which can be done at https://github.com/arctic-hen7/bonnie/releases.",
             VersionDifference::TooOld => "This issue can be fixed by updating the configuration file, which may require changing some of its syntax (see https://github.com/arctic-hen7/bonnie for how to do so). Alternatively, you can download an older version of Bonnie from https://github.com/arctic-hen7/bonnie/releases (not recommended)."
         }),
-        VersionCompatibility::DifferentPatch(version_difference) => println!("{}", "The provided configuration file is compatible with this version of Bonnie, but has a different patch version. You are running Bonnie v".to_string() + BONNIE_VERSION + ", but the configuration file expects Bonnie v" + &raw_cfg.version + ". " + match version_difference {
+        VersionCompatibility::DifferentPatch(version_difference) => println!("{}", "The provided configuration file is compatible with this version of Bonnie, but has a different patch version. You are running Bonnie v".to_string() + bonnie_version_str + ", but the configuration file expects Bonnie v" + &raw_cfg.version + ". " + match version_difference {
             VersionDifference::TooNew => "You may want to update Bonnie to the appropriate version, which can be done at https://github.com/arctic-hen7/bonnie/releases.",
             VersionDifference::TooOld => "You may want to update the configuration file (which shouldn't require any syntax changes)."
         }),
