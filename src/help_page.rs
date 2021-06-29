@@ -3,7 +3,7 @@
 use crate::version::BONNIE_VERSION;
 
 pub fn get_help_page() -> String {
-"
+    "
 Example Usage:
     Commands can be specified in bonnie.toml:
 
