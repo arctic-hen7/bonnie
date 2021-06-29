@@ -1,9 +1,9 @@
 use serde::Deserialize;
 use std::collections::HashMap;
 
-use crate::version::{get_version_parts, VersionCompatibility, VersionDifference};
 use crate::command::Command;
 use crate::commands_registry::CommandsRegistry;
+use crate::version::{get_version_parts, VersionCompatibility, VersionDifference};
 
 // Anything with `Raw` in front of it is deserialised directly into
 // Anything without `Raw` in front of it is the final, parsed form

@@ -343,15 +343,15 @@ fn returns_correct_command_on_identical_version() {
     let cfg_version = "1.2.3";
     let prog_args = vec!["".to_string(), "test".to_string()];
     let conf = "
-        version = \"".to_string() + bonnie_version + "\"
+        version = \""
+        .to_string()
+        + bonnie_version
+        + "\"
         [scripts]
         test = \"echo Hello World\"
 	";
     let command_with_args = get_command_from_cfg_and_args(conf, prog_args, cfg_version);
-    assert_eq!(
-        command_with_args,
-        Ok(String::from("echo Hello World"))
-    )
+    assert_eq!(command_with_args, Ok(String::from("echo Hello World")))
 }
 #[test]
 fn returns_correct_command_on_minor_version_too_high() {
@@ -359,15 +359,15 @@ fn returns_correct_command_on_minor_version_too_high() {
     let cfg_version = "1.3.3";
     let prog_args = vec!["".to_string(), "test".to_string()];
     let conf = "
-        version = \"".to_string() + bonnie_version + "\"
+        version = \""
+        .to_string()
+        + bonnie_version
+        + "\"
         [scripts]
         test = \"echo Hello World\"
 	";
     let command_with_args = get_command_from_cfg_and_args(conf, prog_args, cfg_version);
-    assert_eq!(
-        command_with_args,
-        Ok(String::from("echo Hello World"))
-    )
+    assert_eq!(command_with_args, Ok(String::from("echo Hello World")))
 }
 #[test]
 fn returns_correct_command_on_minor_version_too_low() {
@@ -375,15 +375,15 @@ fn returns_correct_command_on_minor_version_too_low() {
     let cfg_version = "1.1.3";
     let prog_args = vec!["".to_string(), "test".to_string()];
     let conf = "
-        version = \"".to_string() + bonnie_version + "\"
+        version = \""
+        .to_string()
+        + bonnie_version
+        + "\"
         [scripts]
         test = \"echo Hello World\"
 	";
     let command_with_args = get_command_from_cfg_and_args(conf, prog_args, cfg_version);
-    assert_eq!(
-        command_with_args,
-        Ok(String::from("echo Hello World"))
-    )
+    assert_eq!(command_with_args, Ok(String::from("echo Hello World")))
 }
 #[test]
 fn returns_correct_command_on_patch_version_too_high() {
@@ -391,15 +391,15 @@ fn returns_correct_command_on_patch_version_too_high() {
     let cfg_version = "1.2.4";
     let prog_args = vec!["".to_string(), "test".to_string()];
     let conf = "
-        version = \"".to_string() + bonnie_version + "\"
+        version = \""
+        .to_string()
+        + bonnie_version
+        + "\"
         [scripts]
         test = \"echo Hello World\"
 	";
     let command_with_args = get_command_from_cfg_and_args(conf, prog_args, cfg_version);
-    assert_eq!(
-        command_with_args,
-        Ok(String::from("echo Hello World"))
-    )
+    assert_eq!(command_with_args, Ok(String::from("echo Hello World")))
 }
 #[test]
 fn returns_correct_command_on_patch_version_too_low() {
@@ -407,15 +407,15 @@ fn returns_correct_command_on_patch_version_too_low() {
     let cfg_version = "1.2.2";
     let prog_args = vec!["".to_string(), "test".to_string()];
     let conf = "
-        version = \"".to_string() + bonnie_version + "\"
+        version = \""
+        .to_string()
+        + bonnie_version
+        + "\"
         [scripts]
         test = \"echo Hello World\"
 	";
     let command_with_args = get_command_from_cfg_and_args(conf, prog_args, cfg_version);
-    assert_eq!(
-        command_with_args,
-        Ok(String::from("echo Hello World"))
-    )
+    assert_eq!(command_with_args, Ok(String::from("echo Hello World")))
 }
 #[test]
 fn returns_error_on_major_version_too_high() {
@@ -423,7 +423,10 @@ fn returns_error_on_major_version_too_high() {
     let cfg_version = "2.2.3";
     let prog_args = vec!["".to_string(), "test".to_string()];
     let conf = "
-        version = \"".to_string() + bonnie_version + "\"
+        version = \""
+        .to_string()
+        + bonnie_version
+        + "\"
         [scripts]
         test = \"echo Hello World\"
 	";
@@ -438,7 +441,10 @@ fn returns_error_on_major_version_too_low() {
     let cfg_version = "1.3.4";
     let prog_args = vec!["".to_string(), "test".to_string()];
     let conf = "
-        version = \"".to_string() + bonnie_version + "\"
+        version = \""
+        .to_string()
+        + bonnie_version
+        + "\"
         [scripts]
         test = \"echo Hello World\"
 	";
@@ -453,7 +459,10 @@ fn returns_error_on_minor_version_too_high_in_beta() {
     let cfg_version = "1.2.3";
     let prog_args = vec!["".to_string(), "test".to_string()];
     let conf = "
-        version = \"".to_string() + bonnie_version + "\"
+        version = \""
+        .to_string()
+        + bonnie_version
+        + "\"
         [scripts]
         test = \"echo Hello World\"
 	";
@@ -468,7 +477,10 @@ fn returns_error_on_minor_version_too_low_in_beta() {
     let cfg_version = "0.1.3";
     let prog_args = vec!["".to_string(), "test".to_string()];
     let conf = "
-        version = \"".to_string() + bonnie_version + "\"
+        version = \""
+        .to_string()
+        + bonnie_version
+        + "\"
         [scripts]
         test = \"echo Hello World\"
 	";
@@ -483,7 +495,10 @@ fn returns_error_on_patch_version_too_high_in_beta() {
     let cfg_version = "0.2.4";
     let prog_args = vec!["".to_string(), "test".to_string()];
     let conf = "
-        version = \"".to_string() + bonnie_version + "\"
+        version = \""
+        .to_string()
+        + bonnie_version
+        + "\"
         [scripts]
         test = \"echo Hello World\"
 	";
@@ -498,7 +513,10 @@ fn returns_error_on_patch_version_too_low_in_beta() {
     let cfg_version = "0.2.2";
     let prog_args = vec!["".to_string(), "test".to_string()];
     let conf = "
-        version = \"".to_string() + bonnie_version + "\"
+        version = \""
+        .to_string()
+        + bonnie_version
+        + "\"
         [scripts]
         test = \"echo Hello World\"
 	";
@@ -513,7 +531,10 @@ fn returns_error_on_major_version_too_high_in_beta() {
     let cfg_version = "1.2.3";
     let prog_args = vec!["".to_string(), "test".to_string()];
     let conf = "
-        version = \"".to_string() + bonnie_version + "\"
+        version = \""
+        .to_string()
+        + bonnie_version
+        + "\"
         [scripts]
         test = \"echo Hello World\"
 	";

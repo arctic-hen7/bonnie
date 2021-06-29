@@ -19,7 +19,7 @@ pub const DEFAULT_BONNIE_CFG_PATH: &str = "./bonnie.toml";
 pub fn get_command_from_cfg_and_args(
     cfg_string: String,
     prog_args: Vec<String>,
-    version_str: &str // Extracted for testing purposes
+    version_str: &str, // Extracted for testing purposes
 ) -> Result<String, String> {
     let cfg = parse_cfg(cfg_string, version_str)?; // This also loads necessary environment variable files
     let registry = get_commands_registry_from_cfg(&cfg);
@@ -72,7 +72,9 @@ pub fn init() -> Result<(), String> {
         // Create a new `bonnie.toml` file
         let output = fs::write(
             "./bonnie.toml",
-            "version = \"".to_string() + BONNIE_VERSION + "\"
+            "version = \"".to_string()
+                + BONNIE_VERSION
+                + "\"
 
 [scripts]
 start = \"echo \\\"No start script yet.\\\"\"

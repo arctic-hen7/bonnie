@@ -17,39 +17,49 @@ pub enum VersionCompatibility {
     DifferentMajor(VersionDifference), // Only this means the versions are incompatible
     DifferentMinor(VersionDifference),
     DifferentPatch(VersionDifference),
-    DifferentBetaVersion(VersionDifference) // In beta, this also means the versions are incompatible
+    DifferentBetaVersion(VersionDifference), // In beta, this also means the versions are incompatible
 }
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct Version {
     patch: u16,
     minor: u16,
-    major: u16
+    major: u16,
 }
 impl Version {
     // Compares this with another version returns their compatibility
     // It will return an embedded version difference as to whether the version being compared to is too old/new or nothing if they're identical
     pub fn is_compatible_with(&self, comparison: &Version) -> VersionCompatibility {
         let compatibility = match self.major {
-            _ if self.major > comparison.major => VersionCompatibility::DifferentMajor(VersionDifference::TooOld),
-            _ if self.major < comparison.major => VersionCompatibility::DifferentMajor(VersionDifference::TooNew),
-            _ if self.minor > comparison.minor => VersionCompatibility::DifferentMinor(VersionDifference::TooOld),
-            _ if self.minor < comparison.minor => VersionCompatibility::DifferentMinor(VersionDifference::TooNew),
-            _ if self.patch > comparison.patch => VersionCompatibility::DifferentPatch(VersionDifference::TooOld),
-            _ if self.patch < comparison.patch => VersionCompatibility::DifferentPatch(VersionDifference::TooNew),
-            _ => VersionCompatibility::Identical
+            _ if self.major > comparison.major => {
+                VersionCompatibility::DifferentMajor(VersionDifference::TooOld)
+            }
+            _ if self.major < comparison.major => {
+                VersionCompatibility::DifferentMajor(VersionDifference::TooNew)
+            }
+            _ if self.minor > comparison.minor => {
+                VersionCompatibility::DifferentMinor(VersionDifference::TooOld)
+            }
+            _ if self.minor < comparison.minor => {
+                VersionCompatibility::DifferentMinor(VersionDifference::TooNew)
+            }
+            _ if self.patch > comparison.patch => {
+                VersionCompatibility::DifferentPatch(VersionDifference::TooOld)
+            }
+            _ if self.patch < comparison.patch => {
+                VersionCompatibility::DifferentPatch(VersionDifference::TooNew)
+            }
+            _ => VersionCompatibility::Identical,
         };
         // If we're in beta (0.x.x), any difference is tantamount to treason
         if self.major == 0 && !matches!(compatibility, VersionCompatibility::Identical) {
             // Here we figure out if the comparison version is too old or too new
-            VersionCompatibility::DifferentBetaVersion(
-                match compatibility {
-                    VersionCompatibility::DifferentMajor(version_difference) => version_difference,
-                    VersionCompatibility::DifferentMinor(version_difference) => version_difference,
-                    VersionCompatibility::DifferentPatch(version_difference) => version_difference,
-                    _ => panic!("Critical logic failure. You should report this as a bug.") // This shouldn't be possible, we know more than the compiler
-                }
-            )
+            VersionCompatibility::DifferentBetaVersion(match compatibility {
+                VersionCompatibility::DifferentMajor(version_difference) => version_difference,
+                VersionCompatibility::DifferentMinor(version_difference) => version_difference,
+                VersionCompatibility::DifferentPatch(version_difference) => version_difference,
+                _ => panic!("Critical logic failure. You should report this as a bug."), // This shouldn't be possible, we know more than the compiler
+            })
         } else {
             compatibility
         }
@@ -88,7 +98,7 @@ pub fn get_version_parts(version_str: &str) -> Result<Version, String> {
     Ok(Version {
         patch,
         minor,
-        major
+        major,
     })
 }
 
@@ -101,7 +111,7 @@ fn build_version(parts: Vec<u16>) -> Version {
     Version {
         patch: parts[2],
         minor: parts[1],
-        major: parts[0]
+        major: parts[0],
     }
 }
 
@@ -113,10 +123,7 @@ fn identifies_identical_versions() {
     let comparison = build_version(vec![2, 3, 4]);
     let compat = version.is_compatible_with(&comparison);
 
-    assert_eq!(
-        compat,
-        VersionCompatibility::Identical
-    );
+    assert_eq!(compat, VersionCompatibility::Identical);
 }
 #[test]
 fn identifies_major_too_new() {
@@ -191,10 +198,7 @@ fn identifies_identical_versions_in_beta() {
     let comparison = build_version(vec![0, 3, 4]);
     let compat = version.is_compatible_with(&comparison);
 
-    assert_eq!(
-        compat,
-        VersionCompatibility::Identical
-    );
+    assert_eq!(compat, VersionCompatibility::Identical);
 }
 #[test]
 fn identifies_major_too_new_in_beta() {
