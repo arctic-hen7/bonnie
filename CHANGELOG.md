@@ -2,6 +2,32 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.2.0](https://github.com/arctic-hen7/bonnie/compare/v0.1.3...v0.2.0) (2021-06-29)
+
+
+### ⚠ BREAKING CHANGES
+
+* mandated `version` key
+
+### Features
+
+* ✨ added musl install script ([9c8ecac](https://github.com/arctic-hen7/bonnie/commit/9c8ecac60d0a8bf6d48c7627ee2691a53b64c8db))
+* ✨ added versioning system ([fbc4bc1](https://github.com/arctic-hen7/bonnie/commit/fbc4bc15f62726ce7c404778d1d1fa6fdc27f5e8))
+
+
+### Bug Fixes
+
+* 🚑 fixed incorrect version parse ordering ([8871dd6](https://github.com/arctic-hen7/bonnie/commit/8871dd64c26425019074e66c8451de937adbed1e))
+* **install_scripts:** 🐛 fixed musl install script ([3f56f68](https://github.com/arctic-hen7/bonnie/commit/3f56f68ad8cc03855eedbc25d3e265057d91aa7a))
+
+
+### Documentation Changes
+
+* 📝 added gitter badge to readme ([#10](https://github.com/arctic-hen7/bonnie/issues/10)) ([b4aea0f](https://github.com/arctic-hen7/bonnie/commit/b4aea0f8a0452c5ff5e5320e4257e69d7ba64153))
+* 📝 updated help page for version system ([dcfd598](https://github.com/arctic-hen7/bonnie/commit/dcfd5985f672122c12833756bb8c4246cc2aeb1f))
+* 📝 updated readme for version system ([4a29232](https://github.com/arctic-hen7/bonnie/commit/4a29232b774da1eaf9026d22aa73ebe042244895))
+* 📝 updated readme with Docker installation info ([1eaf1bf](https://github.com/arctic-hen7/bonnie/commit/1eaf1bf51649763ca79473ae217f8caabc2b04f8))
+
 ### [0.1.3](https://github.com/arctic-hen7/bonnie/compare/v0.1.2...v0.1.3) (2021-06-26)
 
 ### [0.1.2](https://github.com/arctic-hen7/bonnie/compare/v0.1.1...v0.1.2) (2021-06-25)
