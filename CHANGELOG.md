@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.2.1](https://github.com/arctic-hen7/bonnie/compare/v0.2.0...v0.2.1) (2021-07-02)
+
+
+### Bug Fixes
+
+* ✅ fixed tests dependent on specific version ([490e1ff](https://github.com/arctic-hen7/bonnie/commit/490e1ff8b6c832b1d0139218728a84eabf0a9a2b))
+* 🐛 fixed exit code mismanagement ([061b1c3](https://github.com/arctic-hen7/bonnie/commit/061b1c3352b6b5d850c4c383adafda4e5fe300eb)), closes [#13](https://github.com/arctic-hen7/bonnie/issues/13)
+
 ## [0.2.0](https://github.com/arctic-hen7/bonnie/compare/v0.1.3...v0.2.0) (2021-06-29)
 
 
