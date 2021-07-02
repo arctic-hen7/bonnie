@@ -45,9 +45,9 @@ fn main() {
             Err(err) => return eprintln!("{}", err),
         };
 
-        let cmd_output = run_cmd(command_with_args);
-        match cmd_output {
-            Ok(cmd_output) => cmd_output,
+        let exit_code = run_cmd(command_with_args);
+        match exit_code {
+            Ok(exit_code) => std::process::exit(exit_code), // We exit with the same code as the command that was run
             Err(err) => return eprintln!("{}", err),
         };
     }

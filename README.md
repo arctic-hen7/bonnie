@@ -7,7 +7,7 @@
 Bonnie is a command aliasing tool with support for custom arguments and environment variables. If you have a super-long command that you have to run all the time, Bonnie is for you! Just define the command in `bonnie.toml` at the root of your project, and you're good to go!
 
 ```toml
-version = "0.2.0"
+version = "0.2.1"
 [scripts]
 short = "really long command..."
 ```
@@ -15,7 +15,7 @@ short = "really long command..."
 For example, if you're running `docker-compose` a lot, and you have a custom environment variables file, it's annoying to type out `docker-compose --env-file .my.env ...` every time you want to do something! Bonnie can shorten this easily!
 
 ```toml
-version = "0.2.0"
+version = "0.2.1"
 [scripts]
 dc = "docker-compose --env-file .my.env %%"
 ```
@@ -25,7 +25,7 @@ The double percent sign (`%%`) at the end tells Bonnie to append any arguments y
 You can even insert custom arguments into custom places in a custom order!
 
 ```toml
-version = "0.2.0"
+version = "0.2.1"
 [scripts]
 greet.cmd = "echo \"Greetings %lastname. I see your first name is %firstname?\""
 greet.args = [
@@ -39,7 +39,7 @@ Now if you run `bonnie greet Donald Knuth` you should get `Greetings Knuth. I se
 Environment variables can also be interpolated and sourced from specific files, like `.env`:
 
 ```toml
-version = "0.2.0"
+version = "0.2.1"
 env_files = [
 	".env"
 ]
@@ -87,7 +87,7 @@ Just replace `[VERSION]` with the latest version (see the [releases page](https:
 Bonnie is a simple command-line interface that looks for a `bonnie.toml` file in whatever directory you run the command in. All configuration is defined in there. If you want to put your config file somewhere else, or name it something else, see _Using a custom config file_ below. A basic Bonnie config file should look like this:
 
 ```toml
-version = "0.2.0"
+version = "0.2.1"
 [scripts]
 ```
 
@@ -100,7 +100,7 @@ You can define all your command aliases, which Bonnie calls _scripts_ under the 
 Bonnie supports inserting arguments into commands. This requires you to use the following syntax in `bonnie.toml`:
 
 ```toml
-version = "0.2.0"
+version = "0.2.1"
 [scripts]
 greet.cmd = "echo \"Greetings %lastname. I see your first name is %firstname?\""
 greet.args = [
@@ -120,7 +120,7 @@ As yet, Bonnie doesn't support optional arguments or default values, but hopeful
 Sometimes, you'll want to add a value of an environment variable into a Bonnie command, for example if you've got a variable `$APP_PORT` that defines which port your app runs on and you need to use that in an alias. Bonnie fully supports environment variable interpolation by using long-from notation and the `env_vars` key, just as you would with arguments:
 
 ```toml
-version = "0.2.0"
+version = "0.2.1"
 [scripts]
 interpolation.cmd = "echo \"%GREETING %firstname!\""
 interpolation.args = [
@@ -142,7 +142,7 @@ GREETING="Hello, my dear friend" bonnie interpolation Donald
 However, especially in complex projects, environment variables are very often stored in files like `.env`. Bonnie can load these natively with no extra work by using the `env_files` key in `bonnie.toml`:
 
 ```toml
-version = "0.2.0"
+version = "0.2.1"
 env_files = [
 	".env"
 ]
@@ -166,7 +166,7 @@ Now, as long as `.env` exists, Bonnie will interpolate `$GREETING` without any e
 Many of the commands you specify won't need arguments, they'll just be simple aliases. These can be specified trivially by just writing a key-value pair:
 
 ```toml
-version = "0.2.0"
+version = "0.2.1"
 [scripts]
 foobar = "echo Hello World"
 ```
@@ -178,7 +178,7 @@ You don't need `.cmd` or `.args`, you can just define it as `foobar`, where that
 There are a lot of use cases where you'd want any arguments you provide to be appended to the end of a Bonnie script (this is the default behavior of NPM and Yarn scripts). You can do this easily in Bonnie by using shorthand syntax and adding a `%%` to the end of the command like so:
 
 ```toml
-version = "0.2.0"
+version = "0.2.1"
 [scripts]
 dc = "docker-compose --env-file .my.env %%"
 ```

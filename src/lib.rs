@@ -57,10 +57,10 @@ pub fn get_cfg_path(env_var: Result<String, VarError>) -> String {
 }
 
 // Runs a command (abstracted here to keep the call-only pattern in `main`)
-pub fn run_cmd(cmd: String) -> Result<(), String> {
-    Command::run(&cmd)?;
+pub fn run_cmd(cmd: String) -> Result<i32, String> {
+    let exit_code_to_return = Command::run(&cmd)?;
 
-    Ok(())
+    Ok(exit_code_to_return)
 }
 
 // Functions for reserved commands

@@ -12,6 +12,12 @@ fn returns_empty() {
     }
 }
 #[test]
+fn returns_correct_exit_code() {
+    let cmd = "exit 5";
+    let output = run_cmd(String::from(cmd));
+    assert_eq!(output, Ok(5));
+}
+#[test]
 #[ignore] // This test takes 5 seconds to run
 fn returns_empty_for_long_cmd() {
     let cmd = "sleep 5 && echo Test";

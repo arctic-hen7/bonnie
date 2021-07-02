@@ -21,7 +21,8 @@ impl<'a> Command<'a> {
             cmd,
         }
     }
-    pub fn run(command: &str) -> Result<(), String> {
+    // This returns the exit code of the command that was run
+    pub fn run(command: &str) -> Result<i32, String> {
         // Run the given command (accounting for architecture)
         let child;
         if cfg!(target_os = "windows") {
@@ -43,15 +44,22 @@ impl<'a> Command<'a> {
 
         // If we don't wait on the child, any long-running commands will print into the prompt because the parent terminates first (try it yourself with the `long` command)
         let child = child.wait();
-        match child {
-            Ok(_) => Ok(()),
+        let exit_status = match child {
+            Ok(exit_status) => exit_status,
             Err(_) => return Err(
                 format!(
                     "Command '{}' didn't run (parent unable to wait on child process). See the Bonnie documentation for more details on this problem.",
                     &command
                 )
             )
-        }
+        };
+        // We now need to pass that exit code through so Bonnie can terminate with it (otherwise `&&` chaining doesn't work as expected, etc.)
+        // This will work on both Unix and Windows
+        Ok(match exit_status.code() {
+            Some(exit_code) => exit_code,       // If we have an exit code, use it
+            None if exit_status.success() => 0, // If we don't, but we know the command succeeded, return 0 (success code)
+            None => 1, // If we don't know an exit code but we know that the command failed, return 1 (general error code)
+        })
     }
     pub fn insert_args_and_env_vars(&self, arg_values: &[String]) -> Result<String, String> {
         // Check if this command ends with a double percent sign (meaning we should append all given arguments)

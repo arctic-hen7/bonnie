@@ -1,4 +1,4 @@
-version = "0.2.0"
+version = "0.2.1"
 env_files = [
     ".env"
 ]
@@ -21,6 +21,7 @@ cat = "cat hello.txt"
 long = "sleep 5 && echo Test"
 with_percent = "echo '%Test'"
 append = "echo %%"
+exit_code = "exit 1" # You can check that the code was passed through in BASH with `echo $?`
 bad_combination.cmd = "echo %name %%" # This command will not run until custom arguments are allowed to work with appended arguments
 bad_combination.args = [
 	"name"
