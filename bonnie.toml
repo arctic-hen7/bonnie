@@ -6,6 +6,10 @@ test = "cargo watch -x \"test\""
 dev = "cargo watch -x \"run\"" # Run `cargo install cargo-watch` to add Cargo Watch for this
 check = "cargo check && cargo fmt -- --check && cargo clippy && cargo test" # This will be run on CI as well
 
+# Updates the version in all README examples
+update-readme-version.cmd = "sed -i 's/version = \"%old_version\"/version = \"%new_version\"/g' README.md"
+update-readme-version.args = [ "old_version", "new_version" ]
+
 # Releases the project (maintainers only)
 # We commit all staged files so we can manually bump the Cargo version
 release = "standard-version --sign --commit-all && git push --follow-tags origin main"
