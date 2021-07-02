@@ -5,16 +5,17 @@ use bonnie_lib::{get_command_from_cfg_and_args, BONNIE_VERSION};
 #[test]
 fn returns_correct_command() {
     let prog_args = vec!["".to_string(), "test".to_string(), "Name".to_string()];
-    let conf = String::from(
-        "
-        version = \"0.2.0\"
+    let conf = "
+        version = \""
+        .to_string()
+        + BONNIE_VERSION
+        + "\"
 		[scripts]
 		test.cmd = \"echo %name\"
 		test.args = [
 			\"name\"
 		]
-	",
-    );
+	";
     let command_with_args = get_command_from_cfg_and_args(conf, prog_args, BONNIE_VERSION);
 
     assert_eq!(command_with_args, Ok(String::from("echo Name")))
@@ -22,11 +23,13 @@ fn returns_correct_command() {
 #[test]
 fn returns_correct_command_with_env_var_file() {
     let prog_args = vec!["".to_string(), "test".to_string()];
-    let conf = String::from(
-        // Note that a space is needed after `env_files`
-        // TODO document the above
-        "
-        version = \"0.2.0\"
+    // Note that a space is needed after `env_files`
+    // TODO document the above
+    let conf = "
+        version = \""
+        .to_string()
+        + BONNIE_VERSION
+        + "\"
         env_files = [
             \"src/.env\"
         ]
@@ -36,8 +39,7 @@ fn returns_correct_command_with_env_var_file() {
 		test.env_vars = [
             \"GREETING\"
         ]
-	",
-    );
+	";
     let command_with_args = get_command_from_cfg_and_args(conf, prog_args, BONNIE_VERSION);
 
     assert_eq!(
@@ -48,9 +50,11 @@ fn returns_correct_command_with_env_var_file() {
 #[test]
 fn returns_correct_command_with_args_and_env_vars() {
     let prog_args = vec!["".to_string(), "test".to_string(), "Name".to_string()];
-    let conf = String::from(
-        "
-        version = \"0.2.0\"
+    let conf = "
+        version = \""
+        .to_string()
+        + BONNIE_VERSION
+        + "\"
         env_files = [
             \"src/.env\"
         ]
@@ -63,8 +67,7 @@ fn returns_correct_command_with_args_and_env_vars() {
 		test.env_vars = [
             \"GREETING\"
         ]
-	",
-    );
+	";
     let command_with_args = get_command_from_cfg_and_args(conf, prog_args, BONNIE_VERSION);
 
     assert_eq!(
@@ -75,13 +78,14 @@ fn returns_correct_command_with_args_and_env_vars() {
 #[test]
 fn returns_correct_command_with_shorthand() {
     let prog_args = vec!["".to_string(), "test".to_string()];
-    let conf = String::from(
-        "
-        version = \"0.2.0\"
+    let conf = "
+        version = \""
+        .to_string()
+        + BONNIE_VERSION
+        + "\"
 		[scripts]
 		test = \"echo Name\"
-	",
-    );
+	";
     let command_with_args = get_command_from_cfg_and_args(conf, prog_args, BONNIE_VERSION);
 
     assert_eq!(command_with_args, Ok(String::from("echo Name")))
@@ -94,13 +98,14 @@ fn returns_correct_command_with_appending() {
         "foo".to_string(),
         "bar".to_string(),
     ];
-    let conf = String::from(
-        "
-        version = \"0.2.0\"
+    let conf = "
+        version = \""
+        .to_string()
+        + BONNIE_VERSION
+        + "\"
 		[scripts]
 		test = \"echo %%\"
-	",
-    );
+	";
     let command_with_args = get_command_from_cfg_and_args(conf, prog_args, BONNIE_VERSION);
 
     assert_eq!(command_with_args, Ok(String::from("echo foo bar")))
@@ -108,16 +113,17 @@ fn returns_correct_command_with_appending() {
 #[test]
 fn returns_error_on_invalid_conf() {
     let prog_args = vec!["".to_string(), "test".to_string(), "Name".to_string()];
-    let conf = String::from(
-        "
-        version = \"0.2.0\"
+    let conf = "
+        version = \""
+        .to_string()
+        + BONNIE_VERSION
+        + "\"
 		[scripts]
 		test.cnd = \"echo %name\" # Misspelt this line
 		test.args = [
 			\"name\"
 		]
-	",
-    );
+	";
     let command_with_args = get_command_from_cfg_and_args(conf, prog_args, BONNIE_VERSION);
     if command_with_args.is_ok() {
         panic!("Didn't return an error on invalid config.");
@@ -126,16 +132,17 @@ fn returns_error_on_invalid_conf() {
 #[test]
 fn returns_error_on_no_command() {
     let prog_args = vec!["".to_string()];
-    let conf = String::from(
-        "
-        version = \"0.2.0\"
+    let conf = "
+        version = \""
+        .to_string()
+        + BONNIE_VERSION
+        + "\"
 		[scripts]
 		test.cmd = \"echo %name\"
 		test.args = [
 			\"name\"
 		]
-	",
-    );
+	";
     let command_with_args = get_command_from_cfg_and_args(conf, prog_args, BONNIE_VERSION);
     if command_with_args.is_ok() {
         panic!("Didn't return an error on no command given.");
@@ -144,16 +151,17 @@ fn returns_error_on_no_command() {
 #[test]
 fn returns_error_on_invalid_command() {
     let prog_args = vec!["".to_string(), "trst".to_string(), "Name".to_string()]; // Misspelt command name here
-    let conf = String::from(
-        "
-        version = \"0.2.0\"
+    let conf = "
+        version = \""
+        .to_string()
+        + BONNIE_VERSION
+        + "\"
 		[scripts]
 		test.cmd = \"echo %name\"
 		test.args = [
 			\"name\"
 		]
-	",
-    );
+	";
     let command_with_args = get_command_from_cfg_and_args(conf, prog_args, BONNIE_VERSION);
     if command_with_args.is_ok() {
         panic!("Didn't return an error on invalid command.");
@@ -162,14 +170,14 @@ fn returns_error_on_invalid_command() {
 #[test]
 fn returns_error_on_command_with_appending_and_args() {
     let prog_args = vec!["".to_string(), "test".to_string(), "Name".to_string()];
-    let conf = String::from("
-    version = \"0.2.0\"
+    let conf = "
+        version = \"".to_string() + BONNIE_VERSION + "\"
 		[scripts]
 		test.cmd = \"echo %name %%\" # Appending all arguments as well as having custom arguments is not allowed
 		test.args = [
 			\"name\"
 		]
-	");
+	";
     let command_with_args = get_command_from_cfg_and_args(conf, prog_args, BONNIE_VERSION);
     if command_with_args.is_ok() {
         panic!("Didn't return an error on command that appends arguments and has custom ones.");
@@ -178,16 +186,17 @@ fn returns_error_on_command_with_appending_and_args() {
 #[test]
 fn returns_error_on_too_few_args() {
     let prog_args = vec!["".to_string(), "test".to_string()]; // Didn't give a name
-    let conf = String::from(
-        "
-        version = \"0.2.0\"
+    let conf = "
+        version = \""
+        .to_string()
+        + BONNIE_VERSION
+        + "\"
 		[scripts]
 		test.cmd = \"echo %name\"
 		test.args = [
 			\"name\"
 		]
-	",
-    );
+	";
     let command_with_args = get_command_from_cfg_and_args(conf, prog_args, BONNIE_VERSION);
     if command_with_args.is_ok() {
         panic!("Didn't return an error on too few given arguments.");
@@ -196,16 +205,17 @@ fn returns_error_on_too_few_args() {
 #[test]
 fn returns_error_on_argument_not_inserted() {
     let prog_args = vec!["".to_string(), "test".to_string(), "Name".to_string()];
-    let conf = String::from(
-        "
-        version = \"0.2.0\"
+    let conf = "
+        version = \""
+        .to_string()
+        + BONNIE_VERSION
+        + "\"
 		[scripts]
 		test.cmd = \"echo %name\"
 		test.args = [
 			\"namr\" # Argument misspelt
 		]
-	",
-    );
+	";
     let command_with_args = get_command_from_cfg_and_args(conf, prog_args, BONNIE_VERSION);
     if command_with_args.is_ok() {
         panic!("Didn't return an error on argument not inserted.");
@@ -214,9 +224,11 @@ fn returns_error_on_argument_not_inserted() {
 #[test]
 fn returns_error_on_env_var_not_inserted() {
     let prog_args = vec!["".to_string(), "test".to_string()];
-    let conf = String::from(
-        "
-        version = \"0.2.0\"
+    let conf = "
+        version = \""
+        .to_string()
+        + BONNIE_VERSION
+        + "\"
 		env_files = [
             \"src/.env\"
         ]
@@ -226,8 +238,7 @@ fn returns_error_on_env_var_not_inserted() {
 		test.env_vars = [
             \"GREETING\"
         ]
-	",
-    );
+	";
     let command_with_args = get_command_from_cfg_and_args(conf, prog_args, BONNIE_VERSION);
     if command_with_args.is_ok() {
         panic!("Didn't return an error on environment variable not inserted.");
@@ -236,9 +247,11 @@ fn returns_error_on_env_var_not_inserted() {
 #[test]
 fn returns_error_on_attempted_insertion_of_unrequested_env_var() {
     let prog_args = vec!["".to_string(), "test".to_string()];
-    let conf = String::from(
-        "
-        version = \"0.2.0\"
+    let conf = "
+        version = \""
+        .to_string()
+        + BONNIE_VERSION
+        + "\"
 		env_files = [
             \"src/.env\"
         ]
@@ -248,8 +261,7 @@ fn returns_error_on_attempted_insertion_of_unrequested_env_var() {
 		test.env_vars = [
             \"GREETING\"
         ]
-	",
-    );
+	";
     let command_with_args = get_command_from_cfg_and_args(conf, prog_args, BONNIE_VERSION);
     if command_with_args.is_ok() {
         panic!(
@@ -260,9 +272,11 @@ fn returns_error_on_attempted_insertion_of_unrequested_env_var() {
 #[test]
 fn returns_error_on_env_file_not_found() {
     let prog_args = vec!["".to_string(), "test".to_string()];
-    let conf = String::from(
-        "
-        version = \"0.2.0\"
+    let conf = "
+        version = \""
+        .to_string()
+        + BONNIE_VERSION
+        + "\"
         env_files = [
             \"src/.envv\" # Misspelt this line
         ]
@@ -272,8 +286,7 @@ fn returns_error_on_env_file_not_found() {
 		test.env_vars = [
             \"GREETING\"
         ]
-	",
-    );
+	";
     let command_with_args = get_command_from_cfg_and_args(conf, prog_args, BONNIE_VERSION);
     if command_with_args.is_ok() {
         panic!("Didn't return an error on environment variable file not found.");
@@ -282,9 +295,11 @@ fn returns_error_on_env_file_not_found() {
 #[test]
 fn returns_error_on_invalid_env_file() {
     let prog_args = vec!["".to_string(), "test".to_string()];
-    let conf = String::from(
-        "
-        version = \"0.2.0\"
+    let conf = "
+        version = \""
+        .to_string()
+        + BONNIE_VERSION
+        + "\"
         env_files = [
             \"src/.invalidenv\" # This file exists, but contains invalid characters
         ]
@@ -294,8 +309,7 @@ fn returns_error_on_invalid_env_file() {
 		test.env_vars = [
             \"GREETING\"
         ]
-	",
-    );
+	";
     let command_with_args = get_command_from_cfg_and_args(conf, prog_args, BONNIE_VERSION);
     if command_with_args.is_ok() {
         panic!("Didn't return an error on invalid environment variable file.");
@@ -304,9 +318,11 @@ fn returns_error_on_invalid_env_file() {
 #[test]
 fn returns_error_on_env_var_not_found() {
     let prog_args = vec!["".to_string(), "test".to_string()];
-    let conf = String::from(
-        "
-        version = \"0.2.0\"
+    let conf = "
+        version = \""
+        .to_string()
+        + BONNIE_VERSION
+        + "\"
         env_files = [
             \"src/.env\"
         ]
@@ -316,8 +332,7 @@ fn returns_error_on_env_var_not_found() {
 		test.env_vars = [
             \"GREEETING\" # Misspelt this line
         ]
-	",
-    );
+	";
     let command_with_args = get_command_from_cfg_and_args(conf, prog_args, BONNIE_VERSION);
     if command_with_args.is_ok() {
         panic!("Didn't return an error on environment variable not found (did you define $GREEETING at some point?).");
