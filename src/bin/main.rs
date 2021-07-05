@@ -1,54 +1,45 @@
+use lib::{get_cfg, raw_schema, BONNIE_VERSION};
 use std::env;
 
-use bonnie_lib::{
-    get_cfg, get_cfg_path, get_command_from_cfg_and_args, help, init, run_cmd, BONNIE_VERSION,
-};
-
-// TODO colorise output?
-
-// This program follows the call-only pattern in `main`, so all logic is abstracted into `lib.rs`
-// All error propagation is done with the string errors preformed, so we can print them directly from the match statements
-// As this is a CLI program, any errors are propagated to `main` and then printed with `eprintln!`
+// All this does is run the program and terminate with the acquired exit code
 fn main() {
-    // Get the path of the configuration file
-    let cfg_path = get_cfg_path(env::var("BONNIE_CONF"));
-    // Get the arguments to this program
-    let prog_args: Vec<String> = env::args().collect();
+    let exit_code = real_main();
+    std::process::exit(exit_code)
+}
 
-    // Check if a special command is being run (config file has nothing to do with those)
-    if prog_args.get(1) == Some(&String::from("help")) {
-        // This just prints, we need no error handling whatsoever here
-        help();
-    } else if prog_args.get(1) == Some(&String::from("init")) {
-        // As this creates a file, it can cause errors
-        let output = init();
-        match output {
-            Ok(_) => {
-                return println!("Bonnie configuration file created at './bonnie.toml'. Enjoy!")
-            }
-            Err(err) => return eprintln!("{}", err),
+// This manages error handling and returns a definite exit code to terminate Bonnie with
+fn real_main() -> i32 {
+    let res = core();
+    match res {
+        // If it worked, we pass the executed command's exit code through
+        Ok(exit_code) => exit_code,
+        // If something failed, we print the error to stderr and return a failure exit code
+        Err(err) => {
+            eprintln!("{}", err);
+            1
         }
-    } else {
-        // Get the contents of the configuration file
-        let cfg_string = get_cfg(&cfg_path);
-        let cfg_string = match cfg_string {
-            Ok(cfg_string) => cfg_string,
-            Err(err) => return eprintln!("{}", err),
-        };
-
-        // Get the command to run from the arguments the user gave and the configuration file
-        // We parse the current version in directly here (only extracted as an argument for testing purposes)
-        let command_with_args =
-            get_command_from_cfg_and_args(cfg_string, prog_args, BONNIE_VERSION);
-        let command_with_args = match command_with_args {
-            Ok(command_with_args) => command_with_args,
-            Err(err) => return eprintln!("{}", err),
-        };
-
-        let exit_code = run_cmd(command_with_args);
-        match exit_code {
-            Ok(exit_code) => std::process::exit(exit_code), // We exit with the same code as the command that was run
-            Err(err) => return eprintln!("{}", err),
-        };
     }
+}
+
+// This performs the actual logic, separated for deduplication of error handling and destructor control
+// This returns the exit code of the executed command, which we should return from Bonnie itself
+fn core() -> Result<i32, String> {
+    // Get the config as a string
+    let cfg_str = get_cfg()?;
+    // Create a raw config object and parse it fully
+    // TODO this takes meaningful millseconds for complex configs, so we should be able to cache its results in `.bonnie.cache.json` for speed in extreme cases
+    let cfg = raw_schema::Config::new(&cfg_str)?
+        .to_final(BONNIE_VERSION)?;
+    // Get the arguments to this program, removing the first one (something like `bonnie`)
+    let mut prog_args: Vec<String> = env::args().collect();
+    let _executable_name = prog_args.remove(0); // This will panic if the first argument is not found (which is probably someone trying to fuzz us)
+    // TODO add a checker for the executable that offers to install Bonnie if it isn't already?
+    // Determine which command we're actually running
+    let (command_to_run, command_name, relevant_args) = cfg.get_command_for_args(&prog_args)?;
+    // Get the Bone (item in Bones execution runtime)
+    let bone = command_to_run.prepare(&command_name, &relevant_args, &cfg.default_shell)?;
+    // Execute the Bone, getting its final exit code
+    let exit_code = bone.run(&command_name)?;
+
+    Ok(exit_code)
 }

@@ -1,7 +1,7 @@
 // This file defines the current version of Bonnie
 // This MUST be updated before all releases!
 
-pub const BONNIE_VERSION: &str = "0.2.1";
+pub const BONNIE_VERSION: &str = "0.3.0";
 
 // The different between two major/minor/patch versions
 #[derive(Debug, PartialEq, Eq)]
@@ -58,7 +58,7 @@ impl Version {
                 VersionCompatibility::DifferentMajor(version_difference) => version_difference,
                 VersionCompatibility::DifferentMinor(version_difference) => version_difference,
                 VersionCompatibility::DifferentPatch(version_difference) => version_difference,
-                _ => panic!("Critical logic failure. You should report this as a bug."), // This shouldn't be possible, we know more than the compiler
+                _ => panic!("Critical logic failure in version compatibility checks. You should report this as a bug."), // This shouldn't be possible, we know more than the compiler
             })
         } else {
             compatibility
@@ -106,6 +106,7 @@ pub fn get_version_parts(version_str: &str) -> Result<Version, String> {
 
 // Creates a version from a vector for convenience (testing utility only)
 // This will panic if something goes wrong
+#[cfg(test)]
 fn build_version(parts: Vec<u16>) -> Version {
     // We specify in reverse (e.g. [1, 2, 3] -> 1.2.3)
     Version {

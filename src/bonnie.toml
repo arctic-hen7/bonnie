@@ -1,28 +1,76 @@
-version = "0.2.1"
+# This file defines experimental syntax!
+
+version = "0.3.0"
 env_files = [
     ".env"
 ]
+default_shell.generic = ["sh", "-c", "{COMMAND}"] # This will be used if the target being run on is not found in the following list
+default_shell.targets.windows = ["cmd", "/C", "{COMMAND}"]
 
 [scripts]
-
-test.cmd = "echo %firstname %lastname"
-test.args = [
-	"firstname",
-	"lastname"
+# The most basic possible syntax
+basic = "echo Test"
+# This command will have all given arguments inteprolated into it
+echo = "echo \"Message is: '%%'.\""
+# This command has required specific arguments and then interpolates everything after that at `%%`
+append_with_args.cmd = "echo \"Hi %name! Message is: '%%'.\""
+append_with_args.args = ["name"]
+# Basic syntax, interpolates arguments and environment variables
+interpolation.cmd = "echo %GREETING %name"
+interpolation.args = ["name"]
+interpolation.env_vars = ["GREETING"]
+# This command will run differently on different targets
+adaptable.cmd.generic = "echo Test"
+adaptable.cmd.targets.magic_os = "please print string \"Test\" > console"
+# This command will run differently in different shells on different targets
+# Otherwise the shell would be selected from the options given under the top-level `default_shell`
+super_versatile.cmd.generic.exec = "echo Test"
+super_versatile.cmd.generic.shell = ["sh", "-c", "{COMMAND}"]
+super_versatile.cmd.targets.magic_os.exec = "please print string \"Test\" > console"
+super_versatile.cmd.targets.magic_os.shell = ["please", "run", "command", "{COMMAND}", "against", "sys"]
+# This command has multiple parts that will be run in series
+multistage = [
+    "echo \"Part 1\"",
+    "echo \"Part 2\""
 ]
-interpolation.cmd = "echo \"%GREETING %firstname!\""
-interpolation.args = [
-    "firstname"
+# This command has multiple parts that will be run in series, with interpolation
+multistage_with_interpolation.cmd = [
+    "echo \"Greeting: %GREETING\"",
+    "echo \"Name: %name\""
 ]
-interpolation.env_vars = [
-    "GREETING"
+multistage_with_interpolation.args = ["name"]
+multistage_with_interpolation.env_vars = ["GREETING"]
+# This command has a series of subcommands, one of which is multi-stage with interpolation
+subcommands.cmd = "echo Parent" # This is optional
+# subcommands.args = ["name"] # Unordered subcommands aren't compatible with arguments
+subcommands.subcommands.basic = "echo Test"
+subcommands.subcommands.multistage_with_interpolation.cmd = [
+    "echo \"Greeting: %GREETING\"",
+    "echo \"Name: %name\""
 ]
-cat = "cat hello.txt"
-long = "sleep 5 && echo Test"
-with_percent = "echo '%Test'"
-append = "echo %%"
-exit_code = "exit 1" # You can check that the code was passed through in BASH with `echo $?`
-bad_combination.cmd = "echo %name %%" # This command will not run until custom arguments are allowed to work with appended arguments
-bad_combination.args = [
-	"name"
+subcommands.subcommands.multistage_with_interpolation.args = ["name"]
+subcommands.subcommands.multistage_with_interpolation.env_vars = ["GREETING"]
+subcommands.subcommands.nested.subcommands.basic = "echo Nested"
+subcommands.subcommands.nested.order = "basic" # As long as this is given, no problems arise
+# This command has a series of subcommands that will be executed in a certain order
+# With this type, subcommands can't take arguments, all arguments must be provided up-front for the execution
+# power.cmd = "echo Parent" # This is illegal because top-level commands are incompatible with ordered subcommands (ambiguous execution)
+power.subcommands.basic = "echo Test"
+power.subcommands.multistage_with_interpolation.cmd = [
+    "echo \"Greeting: %GREETING\"",
+    "echo \"Name: %name\""
 ]
+# power.subcommands.multistage_with_interpolation.args = ["name"] # This is illegal, and must be set at the top-level instead
+power.subcommands.multistage_with_interpolation.env_vars = ["GREETING"]
+power.subcommands.error = "echo \"An error has occurred.\""
+power.subcommands.nested.subcommands.basic = "echo Nested"
+power.subcommands.nested.order = "basic" # As long as this is given, no problems arise
+power.order = """
+basic {
+    Success => multistage_with_interpolation {
+        Failure => error
+    },
+    Failure => error
+}
+""" # This syntax is HIGHLY EXPERIMENTAL!!!
+power.args = ["name"]
