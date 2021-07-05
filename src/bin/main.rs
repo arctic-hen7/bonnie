@@ -1,4 +1,4 @@
-use lib::{get_cfg, raw_schema, BONNIE_VERSION};
+use lib::{get_cfg, Config, BONNIE_VERSION};
 use std::env;
 
 // All this does is run the program and terminate with the acquired exit code
@@ -28,7 +28,7 @@ fn core() -> Result<i32, String> {
     let cfg_str = get_cfg()?;
     // Create a raw config object and parse it fully
     // TODO this takes meaningful millseconds for complex configs, so we should be able to cache its results in `.bonnie.cache.json` for speed in extreme cases
-    let cfg = raw_schema::Config::new(&cfg_str)?.to_final(BONNIE_VERSION)?;
+    let cfg = Config::new(&cfg_str)?.to_final(BONNIE_VERSION)?;
     // Get the arguments to this program, removing the first one (something like `bonnie`)
     let mut prog_args: Vec<String> = env::args().collect();
     let _executable_name = prog_args.remove(0); // This will panic if the first argument is not found (which is probably someone trying to fuzz us)
