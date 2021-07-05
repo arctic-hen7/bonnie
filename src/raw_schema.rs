@@ -2,16 +2,16 @@
 // They will then be parsed into the schema defined in `schema.rs` using the logic in the methods on this schema
 // The use of `#[serde(untagged)]` on all `enum`s simply ensures that Serde doesn't require them to be labelled as to their variant
 
-use std::collections::HashMap;
-use serde::Deserialize;
-use crate::version::{BONNIE_VERSION, get_version_parts, VersionCompatibility, VersionDifference};
-use crate::schema;
-use crate::default_shells::get_default_shells;
 use crate::bones::parse_directive_str;
+use crate::default_shells::get_default_shells;
+use crate::schema;
+use crate::version::{get_version_parts, VersionCompatibility, VersionDifference, BONNIE_VERSION};
+use serde::Deserialize;
+use std::collections::HashMap;
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct Config {
-    version: String, // This will be used to confirm compatibility
+    version: String,                // This will be used to confirm compatibility
     env_files: Option<Vec<String>>, // Files specified here have their environment variables loaded into Bonnie
     default_shell: Option<DefaultShell>,
     scripts: Scripts,
@@ -97,28 +97,22 @@ impl Config {
             // If we're just given a shell string, use it as the generic shell
             Some(DefaultShell::Simple(generic)) => schema::DefaultShell {
                 generic: generic.to_vec(),
-                targets: HashMap::new()
+                targets: HashMap::new(),
             },
             // If we have all the information we need, just transform it
-            Some(DefaultShell::Complex {
-                generic,
-                targets,
-            }) => schema::DefaultShell {
+            Some(DefaultShell::Complex { generic, targets }) => schema::DefaultShell {
                 generic: generic.to_vec(),
                 targets: match targets {
                     Some(raw_targets) => {
                         // This is just transformation logic
                         let mut targets = HashMap::new();
                         for (target_name, shell) in raw_targets.iter() {
-                            targets.insert(
-                                target_name.to_string(),
-                                shell.to_vec()
-                            );
-                        };
+                            targets.insert(target_name.to_string(), shell.to_vec());
+                        }
                         targets
-                    },
+                    }
                     None => HashMap::new(), // We'll just use the generic if we don't have anything else
-                }
+                },
             },
             // If no default shell is provided, we'll use the default paradigm (see `default_shells.rs`)
             None => get_default_shells(),
@@ -127,7 +121,10 @@ impl Config {
         // We do this inside a function because it's recursive
         // Unfortunately we can't define methods on type aliases, so this goes here
         // This involves validation logic to ensure invalid property combinations aren't specified, so we need to know whether or not `order` is specified if this is parsing subcommands
-        fn parse_scripts(raw_scripts: &Scripts, is_order_defined: bool) -> Result<schema::Scripts, String> {
+        fn parse_scripts(
+            raw_scripts: &Scripts,
+            is_order_defined: bool,
+        ) -> Result<schema::Scripts, String> {
             let mut scripts: schema::Scripts = HashMap::new();
             for (script_name, raw_command) in raw_scripts.iter() {
                 let command = match raw_command {
@@ -194,23 +191,18 @@ impl Config {
                         }
                     },
                 };
-                scripts.insert(
-                    script_name.to_string(),
-                    command
-                );
-            };
+                scripts.insert(script_name.to_string(), command);
+            }
 
             Ok(scripts)
         }
 
         let scripts = parse_scripts(&self.scripts, false)?;
 
-        Ok(
-            schema::Config {
-                default_shell,
-                scripts
-            }
-        )
+        Ok(schema::Config {
+            default_shell,
+            scripts,
+        })
     }
 }
 #[derive(Debug, Clone, Deserialize)]
@@ -219,8 +211,8 @@ enum DefaultShell {
     Simple(Shell), // Just a generic shell
     Complex {
         generic: Shell, // A generic shell must be given
-        targets: Option<HashMap<String, Shell>>
-    }
+        targets: Option<HashMap<String, Shell>>,
+    },
 }
 type Shell = Vec<String>; // A vector of the executable followed by raw arguments thereto, the location for command interpolation is specified with '{COMMAND}'
 type TargetString = String; // A target like `linux` or `x86_64-unknown-linux-musl` (see `rustup` targets)
@@ -235,12 +227,12 @@ enum Command {
         env_vars: Option<Vec<String>>,
         subcommands: Option<Scripts>, // Subcommands are fully-fledged  commands (mostly)
         order: Option<OrderString>, // If this is specified,subcomands must not specify the `args` property, it may be specified at the top-level of this script as a sibling of `order`
-        cmd: Option<CommandBox>, // This is optional if subcommands are specified
+        cmd: Option<CommandBox>,    // This is optional if subcommands are specified
     },
 }
 type OrderString = String; // A string of as yet undefined syntax that defines the progression between subcommands
-// This wraps the complexities of having different shell logic for each command in a multi-stage context
-// subcommands are specified above this level (see `Command::Complex`)
+                           // This wraps the complexities of having different shell logic for each command in a multi-stage context
+                           // subcommands are specified above this level (see `Command::Complex`)
 #[derive(Debug, Clone, Deserialize)]
 #[serde(untagged)]
 enum CommandBox {
@@ -252,17 +244,11 @@ impl CommandBox {
     fn parse(&self) -> Vec<schema::CommandWrapper> {
         match self {
             // In fully parsed form, all command wrappers are inside vectors for simplicity
-            CommandBox::Simple(raw_command_wrapper) => vec![
-                raw_command_wrapper.parse()
-            ],
-            CommandBox::MultiStage(raw_command_wrappers) => {
-                raw_command_wrappers
-                    .iter()
-                    .map(|raw_command_wrapper|
-                        raw_command_wrapper.parse()
-                    )
-                    .collect()
-            },
+            CommandBox::Simple(raw_command_wrapper) => vec![raw_command_wrapper.parse()],
+            CommandBox::MultiStage(raw_command_wrappers) => raw_command_wrappers
+                .iter()
+                .map(|raw_command_wrapper| raw_command_wrapper.parse())
+                .collect(),
         }
     }
 }
@@ -272,7 +258,7 @@ enum CommandWrapper {
     Universal(CommandCore), // Just a given command
     Specific {
         generic: CommandCore,
-        targets: Option<HashMap<TargetString, CommandCore>>
+        targets: Option<HashMap<TargetString, CommandCore>>,
     },
 }
 impl CommandWrapper {
@@ -282,33 +268,31 @@ impl CommandWrapper {
             // If it's universal to all targets, just provide a generic
             CommandWrapper::Universal(raw_command_core) => schema::CommandWrapper {
                 generic: raw_command_core.parse(),
-                targets: HashMap::new()
+                targets: HashMap::new(),
             },
             // If no targets were given in specific form, the expansion is basically the same as if it were universal
             CommandWrapper::Specific {
                 generic,
-                targets: None
+                targets: None,
             } => schema::CommandWrapper {
                 generic: generic.parse(),
-                targets: HashMap::new()
+                targets: HashMap::new(),
             },
             CommandWrapper::Specific {
                 generic,
-                targets: Some(targets)
+                targets: Some(targets),
             } => {
                 let parsed_generic = generic.parse();
-                let mut parsed_targets: HashMap<schema::TargetString, schema::CommandCore> = HashMap::new();
+                let mut parsed_targets: HashMap<schema::TargetString, schema::CommandCore> =
+                    HashMap::new();
                 for (target_name, raw_command_core) in targets.iter() {
-                    parsed_targets.insert(
-                        target_name.to_string(),
-                        raw_command_core.parse()
-                    );
+                    parsed_targets.insert(target_name.to_string(), raw_command_core.parse());
                 }
                 schema::CommandWrapper {
                     generic: parsed_generic,
-                    targets: parsed_targets
+                    targets: parsed_targets,
                 }
-            },
+            }
         }
     }
 }
@@ -318,7 +302,7 @@ enum CommandCore {
     Simple(String), // No shell configuration
     WithShell {
         exec: String, // We can't call this `cmd` because otherwise we'd have a collision with the higher-level `cmd`, which leads to misinterpretation
-        shell: Option<Shell>
+        shell: Option<Shell>,
     },
 }
 impl CommandCore {
@@ -327,23 +311,20 @@ impl CommandCore {
         match self {
             CommandCore::Simple(exec) => schema::CommandCore {
                 exec: exec.to_string(),
-                shell: None
+                shell: None,
             },
             CommandCore::WithShell {
                 exec,
-                shell: Some(shell)
+                shell: Some(shell),
             } => schema::CommandCore {
                 exec: exec.to_string(),
-                shell: Some(shell.to_vec())
+                shell: Some(shell.to_vec()),
             },
             // If no shell was given in the complex form, the expansion is the same as the simple form
-            CommandCore::WithShell {
-                exec,
-                shell: None
-            } => schema::CommandCore {
+            CommandCore::WithShell { exec, shell: None } => schema::CommandCore {
                 exec: exec.to_string(),
-                shell: None
-            }
+                shell: None,
+            },
         }
     }
 }

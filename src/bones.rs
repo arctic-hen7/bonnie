@@ -1,9 +1,9 @@
 // Bones is Bonnie's command execution runtime, which mainly handles ordered subcommands
 
+use regex::Regex;
 use serde::Deserialize;
 use std::collections::HashMap;
 use std::process::Command as OsCommand;
-use regex::Regex;
 
 // This enables recursion of ordered subcommands (which would be the most complex use-case of Bonnie thus far)
 // This really represents (from Bonnie's perspective) a future for an exit code
@@ -36,7 +36,7 @@ impl Bone {
 
                 // Return the exit code of the command sequence
                 Ok(exit_code)
-            },
+            }
             Bone::Complex(command) => {
                 // If it's complex and thus recursive, we depend on the Bones language parser
                 command.run()
@@ -59,14 +59,17 @@ impl BonesCommand {
     pub fn new(directive: &BonesDirective, cmds: HashMap<String, Bone>) -> Self {
         Self {
             directive: directive.clone(),
-            cmds
+            cmds,
         }
     }
     // Runs a Bones command by evaluating the directive itself and calling commands in sequence recursively
     // Currently, the logic of the Bones language lives here
     fn run(&self) -> Result<i32, String> {
         // This system is highly recursive, so everything is done in this function for progressively less complex directives
-        fn run_for_directive(directive: &BonesDirective, cmds: &HashMap<String, Bone>) -> Result<i32, String> {
+        fn run_for_directive(
+            directive: &BonesDirective,
+            cmds: &HashMap<String, Bone>,
+        ) -> Result<i32, String> {
             // Get the token, which names the command we'll be running
             let command_name = &directive.0;
             // Now get the corresponding Bone if it exists
@@ -89,7 +92,7 @@ impl BonesCommand {
                         // If it does, run that and get its exit code
                         Some(directive) => run_for_directive(directive, cmds)?,
                         // If not, return the exit code we just got above
-                        None => exit_code
+                        None => exit_code,
                     };
                 }
             }
@@ -126,11 +129,11 @@ impl RawBonesDirective {
                 None => None,
             };
             parsed_conditions.insert(operator, directive);
-        };
+        }
 
         Ok(
             // We don't need to do any parsing on the command name, just the conditions
-            BonesDirective(self.0.to_string(), parsed_conditions)
+            BonesDirective(self.0.to_string(), parsed_conditions),
         )
     }
 }
@@ -180,7 +183,7 @@ impl BonesOperator {
                         }
                     }
                     is_match
-                },
+                }
                 BonesOperator::Intersection(operators) => {
                     let mut is_match = false;
                     for operator in operators {
@@ -192,7 +195,7 @@ impl BonesOperator {
                         }
                     }
                     is_match
-                },
+                }
             }
         }
 
@@ -214,7 +217,7 @@ impl BonesOperator {
                     None => return Err(format!("Couldn't extract exit code from `NotExitCode` operator invocation '{}'.", raw_operator))
                 };
                 BonesOperator::NotExitCode(exit_code)
-            },
+            }
             // The next four are simple because they have no attached data
             "Any" => BonesOperator::Any,
             "None" => BonesOperator::None,
@@ -222,28 +225,29 @@ impl BonesOperator {
             "Failure" => BonesOperator::Failure,
             // These require recursion
             _ if raw_operator.contains('|') => {
-                let parts: Vec<&str> = raw_operator
-                    .split('|')
-                    .collect();
+                let parts: Vec<&str> = raw_operator.split('|').collect();
                 let mut operators: Vec<BonesOperator> = Vec::new();
                 // Recursively parse each operator
                 for part in parts {
                     operators.push(BonesOperator::parse_str(part)?)
-                };
+                }
                 BonesOperator::Union(operators)
-            },
+            }
             _ if raw_operator.contains('+') => {
-                let parts: Vec<&str> = raw_operator
-                    .split('+')
-                    .collect();
+                let parts: Vec<&str> = raw_operator.split('+').collect();
                 let mut operators: Vec<BonesOperator> = Vec::new();
                 // Recursively parse each operator
                 for part in parts {
                     operators.push(BonesOperator::parse_str(part)?)
-                };
+                }
                 BonesOperator::Intersection(operators)
-            },
-            _ => return Err(format!("Unrecognized operator '{}' in Bones directive.", raw_operator))
+            }
+            _ => {
+                return Err(format!(
+                    "Unrecognized operator '{}' in Bones directive.",
+                    raw_operator
+                ))
+            }
         };
 
         Ok(operator)
@@ -259,12 +263,10 @@ impl BonesCore {
     fn execute(&self, name: &str) -> Result<i32, String> {
         // Interpolate the command into the given shell
         // The shell might inteprolate it multiple times or not at all, we don't particularly care (shells can be as weird as they like)
-        let cmd_parts: Vec<String> = self.shell
+        let cmd_parts: Vec<String> = self
+            .shell
             .iter()
-            .map(
-                |part|
-                    part.replace("{COMMAND}", &self.cmd)
-            )
+            .map(|part| part.replace("{COMMAND}", &self.cmd))
             .collect();
         // Get the executable from that vector (the first element)
         let executable = cmd_parts.get(0);
@@ -303,13 +305,11 @@ impl BonesCore {
 
         // We now need to pass that exit code through so Bonnie can terminate with it (otherwise `&&` chaining doesn't work as expected, etc.)
         // This will work on both Unix and Windows (and so theoretically any other weird OSes that make any sense at all)
-        Ok(
-            match exit_status.code() {
-                Some(exit_code) => exit_code,       // If we have an exit code, use it
-                None if exit_status.success() => 0, // If we don't, but we know the command succeeded, return 0 (success code)
-                None => 1, // If we don't know an exit code but we know that the command failed, return 1 (general error code)
-            }
-        )
+        Ok(match exit_status.code() {
+            Some(exit_code) => exit_code,       // If we have an exit code, use it
+            None if exit_status.success() => 0, // If we don't, but we know the command succeeded, return 0 (success code)
+            None => 1, // If we don't know an exit code but we know that the command failed, return 1 (general error code)
+        })
     }
 }
 

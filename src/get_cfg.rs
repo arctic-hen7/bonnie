@@ -1,7 +1,7 @@
 // This file contains logic to get the actual configuration itself
 
-use std::fs;
 use std::env;
+use std::fs;
 
 // This can be changed by the user with the `BONNIE_CONF` environment variable
 pub const DEFAULT_BONNIE_CFG_PATH: &str = "./bonnie.toml";

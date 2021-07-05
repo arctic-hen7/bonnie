@@ -28,13 +28,12 @@ fn core() -> Result<i32, String> {
     let cfg_str = get_cfg()?;
     // Create a raw config object and parse it fully
     // TODO this takes meaningful millseconds for complex configs, so we should be able to cache its results in `.bonnie.cache.json` for speed in extreme cases
-    let cfg = raw_schema::Config::new(&cfg_str)?
-        .to_final(BONNIE_VERSION)?;
+    let cfg = raw_schema::Config::new(&cfg_str)?.to_final(BONNIE_VERSION)?;
     // Get the arguments to this program, removing the first one (something like `bonnie`)
     let mut prog_args: Vec<String> = env::args().collect();
     let _executable_name = prog_args.remove(0); // This will panic if the first argument is not found (which is probably someone trying to fuzz us)
-    // TODO add a checker for the executable that offers to install Bonnie if it isn't already?
-    // Determine which command we're actually running
+                                                // TODO add a checker for the executable that offers to install Bonnie if it isn't already?
+                                                // Determine which command we're actually running
     let (command_to_run, command_name, relevant_args) = cfg.get_command_for_args(&prog_args)?;
     // Get the Bone (item in Bones execution runtime)
     let bone = command_to_run.prepare(&command_name, &relevant_args, &cfg.default_shell)?;

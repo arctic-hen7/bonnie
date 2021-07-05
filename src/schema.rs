@@ -1,10 +1,10 @@
 // This file contains the final schema into which all Bonnie configurations are parsed
 // This does not reflect the actual syntax used in the configuration files themselves (see `raw_schema.rs`)
 
-use std::collections::HashMap;
+use crate::bones::{Bone, BonesCommand, BonesCore, BonesDirective};
 use serde::Deserialize;
+use std::collections::HashMap;
 use std::env;
-use crate::bones::{BonesCommand, Bone, BonesCore, BonesDirective};
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct Config {
@@ -15,48 +15,58 @@ impl Config {
     // Gets the command requested by the given vector of arguments
     // The given arguments are expected not to include the first program argument (`bonnie` or the like)
     // Returns the command itself, its name, and the arguments relevant thereto
-    pub fn get_command_for_args(&self, args: &[String]) -> Result<(&Command, String, Vec<String>), String> {
+    pub fn get_command_for_args(
+        &self,
+        args: &[String],
+    ) -> Result<(&Command, String, Vec<String>), String> {
         // We do everything in here for recursion
         // We need to know if this is the first time so we know to say 'command' or 'subcommand' in error messages
-        fn get_command_for_scripts_and_args<'a>(scripts: &'a Scripts, args: &[String], first_time: bool) -> Result<(&'a Command, String, Vec<String>), String> {
+        fn get_command_for_scripts_and_args<'a>(
+            scripts: &'a Scripts,
+            args: &[String],
+            first_time: bool,
+        ) -> Result<(&'a Command, String, Vec<String>), String> {
             // Get the name of the command
             let command_name = args.get(0);
             let command_name = match command_name {
                 Some(command_name) => command_name,
-                None => return Err(
-                    match first_time {
+                None => {
+                    return Err(match first_time {
                         true => String::from("Please provide a command to run."),
-                        false => String::from("Please provide a subcommand to run.")
-                    }
-                )
+                        false => String::from("Please provide a subcommand to run."),
+                    })
+                }
             };
             // Try to find it among those we know
             let command = scripts.get(command_name);
             let command = match command {
                 Some(command) => command,
-                None => return Err(
-                    match first_time {
+                None => {
+                    return Err(match first_time {
                         true => format!("Unknown command '{}'.", command_name),
                         false => format!("Unknown subcommand '{}'.", command_name),
-                    }
-                )
+                    })
+                }
             };
             // We found it, check if it has any unordered subcommands or a root-level command
             let final_command_and_relevant_args = match &command.subcommands {
                 // It has a root-level command (which can't take arguments) and no more arguments are present, this is the command we want
-                Some(_) if matches!(command.cmd, Some(_)) && args.len() == 1 => (command, command_name.to_string(), {
-                    // We get the arguments to the program, excluding the name of this command, these are the arguments to be inteprolated
-                    let mut args_for_interpolation = args.to_vec();
-                    args_for_interpolation.remove(0);
-                    args_for_interpolation
-                }),
+                Some(_) if matches!(command.cmd, Some(_)) && args.len() == 1 => {
+                    (command, command_name.to_string(), {
+                        // We get the arguments to the program, excluding the name of this command, these are the arguments to be inteprolated
+                        let mut args_for_interpolation = args.to_vec();
+                        args_for_interpolation.remove(0);
+                        args_for_interpolation
+                    })
+                }
                 // It does, recurse on them
                 Some(subcommands) if matches!(command.order, None) => {
                     // We remove the first argument, which is the name of this, the parent command
                     let mut args_without_this = args.to_vec();
                     args_without_this.remove(0);
-                    get_command_for_scripts_and_args(&subcommands, &args_without_this, false)? // It's no longer the first time obviously
-                },
+                    get_command_for_scripts_and_args(&subcommands, &args_without_this, false)?
+                    // It's no longer the first time obviously
+                }
                 // They're ordered and so individually uninvocable, this is the command we want
                 Some(_) => (command, command_name.to_string(), {
                     // We get the arguments to the program, excluding the name of this command, these are the arguments to be inteprolated
@@ -70,7 +80,7 @@ impl Config {
                     let mut args_for_interpolation = args.to_vec();
                     args_for_interpolation.remove(0);
                     args_for_interpolation
-                })
+                }),
             };
 
             Ok(final_command_and_relevant_args)
@@ -106,39 +116,54 @@ impl Command {
     // This requires the name of the command and the file's `DefaultShell` configuration
     // This interpolates arguments and environment variables
     // This returns a `BonesCommand` to be executed
-    pub fn prepare(&self, name: &str, prog_args: &[String], default_shell: &DefaultShell) -> Result<Bone, String> {
+    pub fn prepare(
+        &self,
+        name: &str,
+        prog_args: &[String],
+        default_shell: &DefaultShell,
+    ) -> Result<Bone, String> {
         let bone = self.prepare_internal(name, prog_args, &default_shell, None)?;
 
         Ok(bone)
     }
     // This is the internal command preparation logic, which is called recursively.
     // This also takes top-level arguments for recursing on ordered subcommands
-    fn prepare_internal(&self, name: &str, prog_args: &[String], default_shell: &DefaultShell, top_level_args: Option<&[String]>) -> Result<Bone, String> {
+    fn prepare_internal(
+        &self,
+        name: &str,
+        prog_args: &[String],
+        default_shell: &DefaultShell,
+        top_level_args: Option<&[String]>,
+    ) -> Result<Bone, String> {
         let args = match top_level_args {
             Some(args) => args,
             None => &self.args,
         };
         let at_top_level = top_level_args.is_none();
-        if matches!(self.subcommands, None) || (matches!(self.subcommands, Some(_)) && matches!(self.cmd, Some(_))) {
+        if matches!(self.subcommands, None)
+            || (matches!(self.subcommands, Some(_)) && matches!(self.cmd, Some(_)))
+        {
             // We have either a direct command or a parent command that has irrelevant subcommands, either way we're interpolating into `cmd`
             // Get the vector of command wrappers
             let command_wrapper_vec = self.cmd.as_ref().unwrap(); // Assuming the transformation logic works, an error can't occur here
-            // We have to do this in a for loop for `?`
+                                                                  // We have to do this in a for loop for `?`
             let mut cmd_strs: Vec<BonesCore> = Vec::new();
             for command_wrapper in command_wrapper_vec.iter() {
                 let (cmd_str, shell) = command_wrapper.get_command_and_shell(&default_shell);
                 let with_env_vars = Command::interpolate_env_vars(&cmd_str, &self.env_vars)?;
-                let (with_args, remaining_args) = Command::interpolate_specific_args(&with_env_vars, name, &args, prog_args)?;
-                let ready_cmd = Command::interpolate_remaining_arguments(&with_args, &remaining_args);
+                let (with_args, remaining_args) =
+                    Command::interpolate_specific_args(&with_env_vars, name, &args, prog_args)?;
+                let ready_cmd =
+                    Command::interpolate_remaining_arguments(&with_args, &remaining_args);
                 cmd_strs.push(BonesCore {
                     cmd: ready_cmd,
-                    shell
+                    shell,
                 });
-            };
+            }
 
             Ok(
                 // This does not contain recursive `BonesCommands`, so it's `Bone::Simple`
-                Bone::Simple(cmd_strs)
+                Bone::Simple(cmd_strs),
             )
         } else if matches!(self.subcommands, Some(_)) && matches!(self.order, Some(_)) {
             // First, we resolve all the subcommands to vectors of strings to actually run
@@ -160,16 +185,19 @@ impl Command {
             for (subcommand_name, subcommand) in self.subcommands.as_ref().unwrap().iter() {
                 // Parse the subcommand
                 // We parse in the top-level arguments because ordered subcommands can't take their own, they inherit from this level (or the level this level inherits from, etc.)
-                let cmd = subcommand.prepare_internal(subcommand_name, prog_args, &default_shell, Some(&args))?;
+                let cmd = subcommand.prepare_internal(
+                    subcommand_name,
+                    prog_args,
+                    &default_shell,
+                    Some(&args),
+                )?;
                 cmds.insert(subcommand_name.to_string(), cmd);
             }
 
             // Now we return a complex `Bone` (because it contains a `BonesCommand` with a directive)
-            Ok(
-                Bone::Complex(
-                    BonesCommand::new(self.order.as_ref().unwrap(), cmds) // We know more than the compiler by the check above
-                )
-            )
+            Ok(Bone::Complex(
+                BonesCommand::new(self.order.as_ref().unwrap(), cmds), // We know more than the compiler by the check above
+            ))
         } else {
             // This should not be possible!
             panic!("Critical logic failure in preparing command. You should report this as a bug.");
@@ -179,7 +207,12 @@ impl Command {
     // This takes a string to interpolate into and doesn't take `self` so the order is open
     // This returns the readied command string and the remaining arguments or an error if an argument couldn't be substituted in
     // Errors for when the argument can't be interpolated can be silenced for ordered subcommands (which have a universal argument list for many subcommands)
-    fn interpolate_specific_args(cmd_str: &str, name: &str, args: &[String], prog_args: &[String]) -> Result<(String, Vec<String>), String> {
+    fn interpolate_specific_args(
+        cmd_str: &str,
+        name: &str,
+        args: &[String],
+        prog_args: &[String],
+    ) -> Result<(String, Vec<String>), String> {
         // Check if the correct number of arguments was provided
         // Even if we're inserting the rest later, we still need the mandatory ones
         if args.len() > prog_args.len() {
@@ -209,8 +242,7 @@ impl Command {
             // All arguments are shown in the command string as `%name` or the like, so we get that whole string
             let given_value = &prog_args[idx];
             let arg_with_sign = "%".to_string() + arg;
-            let new_command =
-                with_args.replace(&arg_with_sign, &given_value);
+            let new_command = with_args.replace(&arg_with_sign, &given_value);
             // We don't check if we changed something because that doesn't work for multistage or ordered subcommands
             with_args = new_command;
         }
@@ -238,7 +270,7 @@ impl Command {
             let new_command = with_env_vars.replace(&to_replace, &env_var);
             // We don't check if we changed something because that doesn't work for multistage or ordered subcommands
             with_env_vars = new_command;
-        };
+        }
 
         Ok(with_env_vars)
     }
@@ -264,8 +296,7 @@ impl Command {
                 // We push the program's arguments
                 interpolated.push_str(&prog_args.join(" "));
             }
-        };
-
+        }
 
         interpolated
     }
@@ -293,13 +324,13 @@ impl CommandWrapper {
             _ if cfg!(target_os = "dragonfly") => "dragonfly",
             _ if cfg!(target_os = "openbsd") => "openbsd",
             _ if cfg!(target_os = "netbsd") => "netbsd",
-            _ => "unknown" // If they want to, the user could actually specify something for this (like begging to be run somewhere that makes sense)
+            _ => "unknown", // If they want to, the user could actually specify something for this (like begging to be run somewhere that makes sense)
         };
         // See if that target is specified explicitly
         let target_specific_command_core = self.targets.get(running_on);
         let command_core = match target_specific_command_core {
             Some(command_core) => command_core,
-            None => &self.generic
+            None => &self.generic,
         };
         // Get the command as a string ready for interpolation
         let cmd_str = &command_core.exec;
@@ -313,9 +344,9 @@ impl CommandWrapper {
                 let target_specific_shell = default_shell.targets.get(running_on);
                 match target_specific_shell {
                     Some(default_shell) => default_shell,
-                    None => &default_shell.generic
+                    None => &default_shell.generic,
                 }
-            },
+            }
         };
 
         (cmd_str.to_string(), shell.to_vec())

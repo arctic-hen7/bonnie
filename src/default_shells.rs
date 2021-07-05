@@ -1,7 +1,7 @@
 // This file defines the default shells, which will be used if the user doesn't specify a default shell
 
-use std::collections::HashMap;
 use crate::schema;
+use std::collections::HashMap;
 
 // Gets the default shells
 pub fn get_default_shells() -> schema::DefaultShell {
@@ -9,15 +9,15 @@ pub fn get_default_shells() -> schema::DefaultShell {
     targets.insert(
         "windows".to_string(),
         // TODO potentially change this to PowerShell
-        vec!["cmd".to_string(), "/C".to_string(), "{COMMAND}".to_string()]
+        vec!["cmd".to_string(), "/C".to_string(), "{COMMAND}".to_string()],
     );
     targets.insert(
         "macos".to_string(),
-        vec!["sh".to_string(), "-c".to_string(), "{COMMAND}".to_string()]
+        vec!["sh".to_string(), "-c".to_string(), "{COMMAND}".to_string()],
     );
     targets.insert(
         "linux".to_string(),
-        vec!["sh".to_string(), "-c".to_string(), "{COMMAND}".to_string()]
+        vec!["sh".to_string(), "-c".to_string(), "{COMMAND}".to_string()],
     );
 
     schema::DefaultShell {
