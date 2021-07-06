@@ -283,17 +283,19 @@ impl Command {
         let mut interpolated = String::new();
         let split_on_operator: Vec<&str> = cmd_str.split("%%").collect();
         for (idx, part) in split_on_operator.iter().enumerate() {
-            // No matter what, we push the part
-            interpolated.push_str(part);
             if idx == split_on_operator.len() - 1 {
                 // This is the last element, there's no operator after this
+                interpolated.push_str(part);
             } else if part.ends_with('\\') {
                 // This part ends with `\`, meaning the operator was escaped
                 // We just give the `%%` back
+                // We only give back the part up until the escape character
+                interpolated.push_str(&part[0..part.len() - 1]);
                 interpolated.push_str("%%");
             } else {
                 // There's a legitimate operator that should be at the end of this part
                 // We push the program's arguments
+                interpolated.push_str(part);
                 interpolated.push_str(&prog_args.join(" "));
             }
         }
