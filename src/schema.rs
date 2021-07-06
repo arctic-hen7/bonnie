@@ -109,7 +109,7 @@ pub struct Command {
     pub env_vars: Vec<String>,
     pub subcommands: Option<Scripts>, // Subcommands are fully-fledged commands (mostly)
     pub order: Option<BonesDirective>, // If this is specified, subcomands must not specify the `args` property, it may be specified at the top-level of this script as a sibling of `order`
-    pub cmd: Option<Vec<CommandWrapper>>, // If subcommands are provided, a root command is optional
+    pub cmd: Option<CommandWrapper>, // If subcommands are provided, a root command is optional
 }
 impl Command {
     // Prepares a command by interpolating everything and resolving shell/tagret logic
@@ -148,11 +148,11 @@ impl Command {
         {
             // We have either a direct command or a parent command that has irrelevant subcommands, either way we're interpolating into `cmd`
             // Get the vector of command wrappers
-            let command_wrapper_vec = self.cmd.as_ref().unwrap(); // Assuming the transformation logic works, an error can't occur here
+            let command_wrapper = self.cmd.as_ref().unwrap(); // Assuming the transformation logic works, an error can't occur here
                                                                   // We have to do this in a for loop for `?`
             let mut cmd_strs: Vec<BonesCore> = Vec::new();
-            for command_wrapper in command_wrapper_vec.iter() {
-                let (cmd_str, shell) = command_wrapper.get_command_and_shell(&default_shell);
+            let (cmds, shell) = command_wrapper.get_commands_and_shell(&default_shell);
+            for cmd_str in cmds {
                 let with_env_vars = Command::interpolate_env_vars(&cmd_str, &self.env_vars)?;
                 let (with_args, remaining_args) = Command::interpolate_specific_args(
                     &with_env_vars,
@@ -165,7 +165,7 @@ impl Command {
                     Command::interpolate_remaining_arguments(&with_args, &remaining_args);
                 cmd_strs.push(BonesCore {
                     cmd: ready_cmd,
-                    shell,
+                    shell: shell.to_vec(),
                 });
             }
 
@@ -324,7 +324,7 @@ pub struct CommandWrapper {
 impl CommandWrapper {
     // Gets the command to run, interpolated into a shell from the ambient OS information
     // This critically resolves which target we're running on
-    fn get_command_and_shell(&self, default_shell: &DefaultShell) -> (String, Shell) {
+    fn get_commands_and_shell(&self, default_shell: &DefaultShell) -> (Vec<String>, Shell) {
         // Get the current target (unfortuantely we can't actually get the value out of `cfg!` yet...)
         // If the user needs to set custom commands based on target arch etc., they can write a script for it, this is exhaustive enough!
         let running_on = match true {
@@ -345,8 +345,8 @@ impl CommandWrapper {
             Some(command_core) => command_core,
             None => &self.generic,
         };
-        // Get the command as a string ready for interpolation
-        let cmd_str = &command_core.exec;
+        // Get the commands as a vector ready for interpolation
+        let cmd = &command_core.exec;
         // Get the shell, using the configured per-file default if it was undefined
         let shell = match &command_core.shell {
             Some(shell) => shell,
@@ -362,7 +362,7 @@ impl CommandWrapper {
             }
         };
 
-        (cmd_str.to_string(), shell.to_vec())
+        (cmd.to_vec(), shell.to_vec())
     }
 }
 // This is the lowest level of command specification, there is no more recursion allowed here (thus avoiding circularity)
@@ -370,6 +370,6 @@ impl CommandWrapper {
 // This can also define which shell the command will use
 #[derive(Debug, Clone, Deserialize)]
 pub struct CommandCore {
-    pub exec: String, // This is the actual command that will be run (named differently to avoid collisions)
+    pub exec: Vec<String>, // These are the actual commands that will be run (named differently to avoid collisions)
     pub shell: Option<Shell>, // If given, this is the shell it will be run in, or the `default_shell` config for this target will be used
 }

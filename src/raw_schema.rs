@@ -138,12 +138,12 @@ impl Config {
             let mut scripts: schema::Scripts = HashMap::new();
             for (script_name, raw_command) in raw_scripts.iter() {
                 let command = match raw_command {
-                    Command::Simple(raw_command_box) => schema::Command {
+                    Command::Simple(raw_command_wrapper) => schema::Command {
                         args: Vec::new(),
                         env_vars: Vec::new(),
                         subcommands: None,
                         order: None,
-                        cmd: Some(raw_command_box.parse()) // In the simple form, a command must be given (no subcommands can be specified)
+                        cmd: Some(raw_command_wrapper.parse()) // In the simple form, a command must be given (no subcommands can be specified)
                     },
                     Command::Complex {
                         args,
@@ -231,37 +231,18 @@ type Scripts = HashMap<String, Command>;
 #[derive(Debug, Clone, Deserialize)]
 #[serde(untagged)]
 enum Command {
-    Simple(CommandBox), // Might be just a string command to run on the default generic shell
+    Simple(CommandWrapper), // Might be just a string command to run on the default generic shell
     Complex {
         args: Option<Vec<String>>,
         env_vars: Option<Vec<String>>,
         subcommands: Option<Scripts>, // Subcommands are fully-fledged  commands (mostly)
         order: Option<OrderString>, // If this is specified,subcomands must not specify the `args` property, it may be specified at the top-level of this script as a sibling of `order`
-        cmd: Option<CommandBox>,    // This is optional if subcommands are specified
+        cmd: Option<CommandWrapper>,    // This is optional if subcommands are specified
     },
 }
 type OrderString = String; // A string of as yet undefined syntax that defines the progression between subcommands
                            // This wraps the complexities of having different shell logic for each command in a multi-stage context
                            // subcommands are specified above this level (see `Command::Complex`)
-#[derive(Debug, Clone, Deserialize)]
-#[serde(untagged)]
-enum CommandBox {
-    Simple(CommandWrapper),
-    MultiStage(Vec<CommandWrapper>),
-}
-impl CommandBox {
-    // Parses `self` into its final form (`Vec<schema::CommandWrapper>`)
-    fn parse(&self) -> Vec<schema::CommandWrapper> {
-        match self {
-            // In fully parsed form, all command wrappers are inside vectors for simplicity
-            CommandBox::Simple(raw_command_wrapper) => vec![raw_command_wrapper.parse()],
-            CommandBox::MultiStage(raw_command_wrappers) => raw_command_wrappers
-                .iter()
-                .map(|raw_command_wrapper| raw_command_wrapper.parse())
-                .collect(),
-        }
-    }
-}
 #[derive(Debug, Clone, Deserialize)]
 #[serde(untagged)]
 enum CommandWrapper {
@@ -309,9 +290,9 @@ impl CommandWrapper {
 #[derive(Debug, Clone, Deserialize)]
 #[serde(untagged)]
 enum CommandCore {
-    Simple(String), // No shell configuration
+    Simple(CommandBox), // No shell configuration
     WithShell {
-        exec: String, // We can't call this `cmd` because otherwise we'd have a collision with the higher-level `cmd`, which leads to misinterpretation
+        exec: CommandBox, // We can't call this `cmd` because otherwise we'd have a collision with the higher-level `cmd`, which leads to misinterpretation
         shell: Option<Shell>,
     },
 }
@@ -320,21 +301,41 @@ impl CommandCore {
     fn parse(&self) -> schema::CommandCore {
         match self {
             CommandCore::Simple(exec) => schema::CommandCore {
-                exec: exec.to_string(),
+                exec: exec.parse(),
                 shell: None,
             },
             CommandCore::WithShell {
                 exec,
                 shell: Some(shell),
             } => schema::CommandCore {
-                exec: exec.to_string(),
+                exec: exec.parse(),
                 shell: Some(shell.to_vec()),
             },
             // If no shell was given in the complex form, the expansion is the same as the simple form
             CommandCore::WithShell { exec, shell: None } => schema::CommandCore {
-                exec: exec.to_string(),
+                exec: exec.parse(),
                 shell: None,
             },
+        }
+    }
+}
+// This represents the possibility of a vector or string at the lowest level
+#[derive(Debug, Clone, Deserialize)]
+#[serde(untagged)]
+enum CommandBox {
+    Simple(String),
+    MultiStage(Vec<String>),
+}
+impl CommandBox {
+    // Parses `self` into its final form (`Vec<schema::CommandWrapper>`)
+    fn parse(&self) -> Vec<String> {
+        match self {
+            // In fully parsed form, all command wrappers are inside vectors for simplicity
+            CommandBox::Simple(cmd_str) => vec![cmd_str.to_string()],
+            CommandBox::MultiStage(cmd_strs) => cmd_strs
+                .iter()
+                .map(|cmd_str| cmd_str.to_string())
+                .collect(),
         }
     }
 }
