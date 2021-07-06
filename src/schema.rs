@@ -116,13 +116,15 @@ impl Command {
     // This requires the name of the command and the file's `DefaultShell` configuration
     // This interpolates arguments and environment variables
     // This returns a `BonesCommand` to be executed
+    // This accepts an output for warnings (extracted for testing)
     pub fn prepare(
         &self,
         name: &str,
         prog_args: &[String],
         default_shell: &DefaultShell,
+        output: &mut impl std::io::Write,
     ) -> Result<Bone, String> {
-        let bone = self.prepare_internal(name, prog_args, &default_shell, None)?;
+        let bone = self.prepare_internal(name, prog_args, &default_shell, None, output)?;
 
         Ok(bone)
     }
@@ -134,6 +136,7 @@ impl Command {
         prog_args: &[String],
         default_shell: &DefaultShell,
         top_level_args: Option<&[String]>,
+        output: &mut impl std::io::Write,
     ) -> Result<Bone, String> {
         let args = match top_level_args {
             Some(args) => args,
@@ -151,8 +154,13 @@ impl Command {
             for command_wrapper in command_wrapper_vec.iter() {
                 let (cmd_str, shell) = command_wrapper.get_command_and_shell(&default_shell);
                 let with_env_vars = Command::interpolate_env_vars(&cmd_str, &self.env_vars)?;
-                let (with_args, remaining_args) =
-                    Command::interpolate_specific_args(&with_env_vars, name, &args, prog_args)?;
+                let (with_args, remaining_args) = Command::interpolate_specific_args(
+                    &with_env_vars,
+                    name,
+                    &args,
+                    prog_args,
+                    output,
+                )?; // This needs to print warnings, so it takes an `output`
                 let ready_cmd =
                     Command::interpolate_remaining_arguments(&with_args, &remaining_args);
                 cmd_strs.push(BonesCore {
@@ -190,6 +198,7 @@ impl Command {
                     prog_args,
                     &default_shell,
                     Some(&args),
+                    output,
                 )?;
                 cmds.insert(subcommand_name.to_string(), cmd);
             }
@@ -212,6 +221,7 @@ impl Command {
         name: &str,
         args: &[String],
         prog_args: &[String],
+        output: &mut impl std::io::Write,
     ) -> Result<(String, Vec<String>), String> {
         // Check if the correct number of arguments was provided
         // Even if we're inserting the rest later, we still need the mandatory ones
@@ -228,12 +238,13 @@ impl Command {
         // Return an error if there are too few
         // Warn if there are too many and we're not inserting the rest with `%%` later
         if args.len() < prog_args.len() && !cmd_str.contains("%%") {
-            println!(
+            writeln!(
+                output,
                 "Warning: The command '{command}' only needs {num_required_args} argument(s), but {num_given_args} argument(s) were provided (too many). Your command will still run, this warning is just here to save time in debugging!",
                 command=name,
                 num_required_args=args.len(),
                 num_given_args=&prog_args.len()
-            );
+            ).expect("Failed to write warning.");
         }
         let mut with_args = cmd_str.to_string();
         // We need to know the index so we can correlate to the index of the argument in `args`
