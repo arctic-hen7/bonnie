@@ -339,7 +339,7 @@ pub fn parse_directive_str(directive_str: &str) -> Result<BonesDirective, String
         let sub1 = "$1\"$2\": [\"$3\", {";
         let re2 = Regex::new(r"(?m)^(\s*)(.+) => (.+)\b").unwrap();
         let sub2 = "$1\"$2\": [\"$3\", {}]";
-        let re3 = Regex::new(r"(?m)^\b(.+) \{").unwrap();
+        let re3 = Regex::new(r"^\s*\b(.+) \{").unwrap();
         let sub3 = "[\"$1\", {";
         // Execute each of those substitutions
         let stage2 = re1.replace_all(&stage1, sub1);
