@@ -1,4 +1,4 @@
-use lib::{get_cfg, Config, BONNIE_VERSION, init, help};
+use lib::{cache, cache_exists, get_cfg, help, init, load_from_cache, Config, BONNIE_VERSION};
 use std::env;
 use std::io::Write;
 
@@ -35,6 +35,7 @@ fn core() -> Result<i32, String> {
     // TODO add a checker for the executable that offers to install Bonnie if it isn't already?
     let _executable_name = prog_args.remove(0);
     // Check for special arguments
+    let mut should_cache = false;
     if matches!(prog_args.get(0), Some(_)) {
         if prog_args[0] == "-v" || prog_args[0] == "--version" {
             writeln!(stdout, "You are currently running Bonnie v{}! You can see the latest release at https://github.com/arctic-hen7/bonnie/releases.", BONNIE_VERSION).expect("Failed to write version.");
@@ -43,22 +44,43 @@ fn core() -> Result<i32, String> {
             init(
                 // See if a template was provided with the `--template`/`-t` flag
                 match prog_args.get(1).as_ref() {
-                    Some(arg) if &**arg == "-t" || &**arg == "--template" => prog_args.get(2).map(|x| x.to_string()),
-                    _ => None
-                }
+                    Some(arg) if &**arg == "-t" || &**arg == "--template" => {
+                        prog_args.get(2).map(|x| x.to_string())
+                    }
+                    _ => None,
+                },
             )?;
             return Ok(0);
         } else if prog_args[0] == "-h" || prog_args[0] == "--help" {
             help(stdout);
             return Ok(0);
+        } else if prog_args[0] == "-c" || prog_args[0] == "--cache" {
+            should_cache = true;
         }
     }
-    // Get the config as a string
-    let cfg_str = get_cfg()?;
-    // Create a raw config object and parse it fully
-    // We use `stdout` for printing warnings
-    // TODO this takes meaningful millseconds for complex configs, so we should be able to cache its results in `.bonnie.cache.json` for speed in extreme cases
-    let cfg = Config::new(&cfg_str)?.to_final(BONNIE_VERSION, stdout)?;
+    // Check if there's a cache we should read from
+    // If there is but we're explicitly recaching, we should of course read directly from the source file
+    let cfg;
+    if cache_exists() && !should_cache {
+        cfg = load_from_cache(stdout)?;
+    } else {
+        // Get the config as a string
+        let cfg_str = get_cfg()?;
+        // Create a raw config object and parse it fully
+        // We use `stdout` for printing warnings
+        cfg = Config::new(&cfg_str)?.to_final(BONNIE_VERSION, stdout)?;
+    }
+
+    // Check if we're caching
+    if should_cache {
+        cache(&cfg)?;
+        writeln!(
+            stdout,
+            "Your Bonnie configuration has been successfully cached to './.bonnie.cache.json'! This will be used to speed up future execution. Please note that this cache will NOT be updated until you explicitly run `bonnie -c` again."
+        ).expect("Failed to write caching message.");
+        return Ok(0);
+    }
+
     // Determine which command we're actually running
     let (command_to_run, command_name, relevant_args) = cfg.get_command_for_args(&prog_args)?;
     // Get the Bone (item in Bones execution runtime)

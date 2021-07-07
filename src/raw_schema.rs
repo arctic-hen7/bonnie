@@ -37,9 +37,9 @@ impl Config {
         bonnie_version_str: &str,
         output: &mut impl std::io::Write,
     ) -> Result<schema::Config, String> {
-        // These two are run for their side-effects
-        self.parse_version_against_current(bonnie_version_str, output)?;
-        self.load_env_files()?;
+        // These two are run for their side-effects (both also used in loading from a cache)
+        Self::parse_version_against_current(&self.version, bonnie_version_str, output)?;
+        Self::load_env_files(self.env_files.clone())?;
         // And then we get the final config
         let cfg = self.parse()?;
 
@@ -47,31 +47,32 @@ impl Config {
     }
     // Parses the version of the config to check for compatibility issues, consuming `self`
     // We extract the version of Bonnie itself for testing purposes
-    fn parse_version_against_current(
-        &self,
+    // This si generic because it's used in caching logic as well
+    pub fn parse_version_against_current(
+        cfg_version_str: &str,
         bonnie_version_str: &str,
         output: &mut impl std::io::Write,
     ) -> Result<(), String> {
         // Split the program and config file versions into their components
         let bonnie_version = get_version_parts(bonnie_version_str)?;
-        let cfg_version = get_version_parts(&self.version)?;
+        let cfg_version = get_version_parts(cfg_version_str)?;
         // Compare the two and warn/error appropriately
         let compat = bonnie_version.is_compatible_with(&cfg_version);
         match compat {
-            VersionCompatibility::DifferentBetaVersion(version_difference) => return Err("The provided configuration file is incompatible with this version of Bonnie. You are running Bonnie v".to_string() + bonnie_version_str + ", but the configuration file expects Bonnie v" + &self.version + ". " + match version_difference {
+            VersionCompatibility::DifferentBetaVersion(version_difference) => return Err("The provided configuration file is incompatible with this version of Bonnie. You are running Bonnie v".to_string() + bonnie_version_str + ", but the configuration file expects Bonnie v" + cfg_version_str + ". " + match version_difference {
                 VersionDifference::TooNew => "This issue can be fixed by updating Bonnie to the appropriate version, which can be done at https://github.com/arctic-hen7/bonnie/releases.",
                 VersionDifference::TooOld => "This issue can be fixed by updating the configuration file, which may require changing some of its syntax (see https://github.com/arctic-hen7/bonnie for how to do so). Alternatively, you can download an older version of Bonnie from https://github.com/arctic-hen7/bonnie/releases (not recommended)."
             }),
-            VersionCompatibility::DifferentMajor(version_difference) => return Err("The provided configuration file is incompatible with this version of Bonnie. You are running Bonnie v".to_string() + bonnie_version_str + ", but the configuration file expects Bonnie v" + &self.version + ". " + match version_difference {
+            VersionCompatibility::DifferentMajor(version_difference) => return Err("The provided configuration file is incompatible with this version of Bonnie. You are running Bonnie v".to_string() + bonnie_version_str + ", but the configuration file expects Bonnie v" + cfg_version_str + ". " + match version_difference {
                 VersionDifference::TooNew => "This issue can be fixed by updating Bonnie to the appropriate version, which can be done at https://github.com/arctic-hen7/bonnie/releases.",
                 VersionDifference::TooOld => "This issue can be fixed by updating the configuration file, which may require changing some of its syntax (see https://github.com/arctic-hen7/bonnie for how to do so). Alternatively, you can download an older version of Bonnie from https://github.com/arctic-hen7/bonnie/releases (not recommended)."
             }),
             // These next two are just warnings, not errors
-            VersionCompatibility::DifferentMinor(version_difference) => writeln!(output, "{}", "The provided configuration file is compatible with this version of Bonnie, but has a different minor version. You are running Bonnie v".to_string() + bonnie_version_str + ", but the configuration file expects Bonnie v" + &self.version + ". " + match version_difference {
+            VersionCompatibility::DifferentMinor(version_difference) => writeln!(output, "{}", "The provided configuration file is compatible with this version of Bonnie, but has a different minor version. You are running Bonnie v".to_string() + bonnie_version_str + ", but the configuration file expects Bonnie v" + cfg_version_str + ". " + match version_difference {
                 VersionDifference::TooNew => "This issue can be fixed by updating Bonnie to the appropriate version, which can be done at https://github.com/arctic-hen7/bonnie/releases.",
                 VersionDifference::TooOld => "This issue can be fixed by updating the configuration file, which may require changing some of its syntax (see https://github.com/arctic-hen7/bonnie for how to do so). Alternatively, you can download an older version of Bonnie from https://github.com/arctic-hen7/bonnie/releases (not recommended)."
             }).expect("Failed to write warning."),
-            VersionCompatibility::DifferentPatch(version_difference) => writeln!(output, "{}", "The provided configuration file is compatible with this version of Bonnie, but has a different patch version. You are running Bonnie v".to_string() + bonnie_version_str + ", but the configuration file expects Bonnie v" + &self.version + ". " + match version_difference {
+            VersionCompatibility::DifferentPatch(version_difference) => writeln!(output, "{}", "The provided configuration file is compatible with this version of Bonnie, but has a different patch version. You are running Bonnie v".to_string() + bonnie_version_str + ", but the configuration file expects Bonnie v" + cfg_version_str + ". " + match version_difference {
                 VersionDifference::TooNew => "You may want to update Bonnie to the appropriate version, which can be done at https://github.com/arctic-hen7/bonnie/releases.",
                 VersionDifference::TooOld => "You may want to update the configuration file (which shouldn't require any syntax changes)."
             }).expect("Failed to write warning."),
@@ -82,8 +83,9 @@ impl Config {
         Ok(())
     }
     // Loads the environment variable files requested in the config
-    fn load_env_files(&self) -> Result<(), String> {
-        let env_files = match self.env_files.clone() {
+    // This is generic because it's called in caching as well
+    pub fn load_env_files(env_files: Option<Vec<String>>) -> Result<(), String> {
+        let env_files = match env_files {
             Some(env_files) => env_files,
             None => Vec::new(),
         };
@@ -212,6 +214,12 @@ impl Config {
         Ok(schema::Config {
             default_shell,
             scripts,
+            // Copy these last two in case the final config is cached and needs to be revalidated on load
+            env_files: match &self.env_files {
+                Some(env_files) => env_files.to_vec(),
+                None => Vec::new(),
+            },
+            version: self.version.clone(),
         })
     }
 }

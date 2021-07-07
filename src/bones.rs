@@ -1,13 +1,13 @@
 // Bones is Bonnie's command execution runtime, which mainly handles ordered subcommands
 
 use regex::Regex;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::process::Command as OsCommand;
 
 // This enables recursion of ordered subcommands (which would be the most complex use-case of Bonnie thus far)
 // This really represents (from Bonnie's perspective) a future for an exit code
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum Bone {
     Simple(Vec<BonesCore>),
     Complex(BonesCommand),
@@ -46,7 +46,7 @@ impl Bone {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct BonesCommand {
     // A HashMap of command names to vectors of raw commands to be executed
     // The commands to run are expected to have interpolation and target/shell resolution already done
@@ -112,10 +112,10 @@ impl BonesCommand {
 
 // A directive telling the Bones engine how to progress between ordered subcommands
 // This maps the command to run to a set of conditions as to how to proceed based on its exit code
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct BonesDirective(String, HashMap<BonesOperator, Option<BonesDirective>>);
 // This is used for direct parsing, before we've had a chance to handle the operators
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 struct RawBonesDirective(String, HashMap<String, Option<RawBonesDirective>>);
 impl RawBonesDirective {
     // This converts to a `BonesDirective` by parsing the operator strings into full operators
@@ -141,7 +141,7 @@ impl RawBonesDirective {
 }
 // Bones operators can be more than just exit codes, this defines their possibilities
 // For deserialization, this is left tagged (we pre-parse)
-#[derive(Debug, Clone, Deserialize, PartialEq, Eq, std::hash::Hash)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, std::hash::Hash)]
 pub enum BonesOperator {
     // A simple exit code comparison
     ExitCode(i32),
@@ -256,7 +256,7 @@ impl BonesOperator {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct BonesCore {
     pub cmd: String,
     pub shell: Vec<String>, // Vector of executable and arguments thereto

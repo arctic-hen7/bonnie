@@ -1,5 +1,5 @@
-use std::fs;
 use crate::version::BONNIE_VERSION;
+use std::fs;
 
 // Creates a new Bonnie configuration file using a template, or from the default
 pub fn init(template: Option<String>) -> Result<(), String> {
@@ -20,20 +20,20 @@ pub fn init(template: Option<String>) -> Result<(), String> {
             output = fs::write("./bonnie.toml", contents);
         } else if matches!(template, Some(_)) && fs::metadata(template.as_ref().unwrap()).is_err() {
             // We have a template file that doesn't exist
-            return Err(format!("The given template file at '{}' does not exist or can't be read. Please make sure the file exists and you have the permissions necessary to read from it.", template.as_ref().unwrap()))
+            return Err(format!("The given template file at '{}' does not exist or can't be read. Please make sure the file exists and you have the permissions necessary to read from it.", template.as_ref().unwrap()));
         } else {
             // Create a new `bonnie.toml` file using the default
             // TODO read the default from `~/.bonnie/template.toml` if it exists
             output = fs::write(
                 "./bonnie.toml",
                 format!(
-                "version=\"{version}\"
+                    "version=\"{version}\"
 
 [scripts]
 start = \"echo \\\"No start script yet!\\\"\"
                 ",
-                    version=BONNIE_VERSION
-                )
+                    version = BONNIE_VERSION
+                ),
             );
         }
 

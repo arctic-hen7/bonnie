@@ -8,6 +8,7 @@ pub fn help(output: &mut impl std::io::Write) {
 
 Hello World!
         ",
-        version=BONNIE_VERSION
-    ).expect("Failed to write help page.")
+        version = BONNIE_VERSION
+    )
+    .expect("Failed to write help page.")
 }
