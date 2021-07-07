@@ -8,8 +8,11 @@ pub fn get_default_shells() -> schema::DefaultShell {
     let mut targets = HashMap::new();
     targets.insert(
         "windows".to_string(),
-        // TODO potentially change this to PowerShell
-        vec!["cmd".to_string(), "/C".to_string(), "{COMMAND}".to_string()],
+        vec![
+            "powershell".to_string(),
+            "-command".to_string(),
+            "{COMMAND}".to_string(),
+        ],
     );
     targets.insert(
         "macos".to_string(),
