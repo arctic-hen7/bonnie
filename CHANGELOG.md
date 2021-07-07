@@ -2,6 +2,47 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.3.0](https://github.com/arctic-hen7/bonnie/compare/v0.2.1...v0.3.0) (2021-07-07)
+
+
+### ⚠ BREAKING CHANGES
+
+* changed default shell on Windows to `powershell`
+* new invocation using flags for help/init/version commands
+* significant error message changes
+
+### Features
+
+* ✨ added caching logic ([c9c4c4d](https://github.com/arctic-hen7/bonnie/commit/c9c4c4d3ee7917117af784b686cfd75201a50652)), closes [#14](https://github.com/arctic-hen7/bonnie/issues/14)
+* ✨ added multistage commands, subcommands, shell/target control, and rewrote everything ([41209a3](https://github.com/arctic-hen7/bonnie/commit/41209a338b1a29357c418374b69f2ca5d5fbef65)), closes [#4](https://github.com/arctic-hen7/bonnie/issues/4) [#11](https://github.com/arctic-hen7/bonnie/issues/11) [#12](https://github.com/arctic-hen7/bonnie/issues/12)
+* ✨ added new help/init/version commands ([8a8cb9c](https://github.com/arctic-hen7/bonnie/commit/8a8cb9c273a41206020cb3919ac0cb04d768d3f7))
+* ✨ added support for custom cache file ([76fee05](https://github.com/arctic-hen7/bonnie/commit/76fee05ba0cc73d3bf65d3d63392fc51df56f79b))
+* ✨ changed default shell on windows to powershell ([bdd2c67](https://github.com/arctic-hen7/bonnie/commit/bdd2c67b83d0417c46c24fd56c5e417ae8edfbc0)), closes [#15](https://github.com/arctic-hen7/bonnie/issues/15)
+
+
+### Bug Fixes
+
+* 🐛 fixed `%%` escaping ([7cd9810](https://github.com/arctic-hen7/bonnie/commit/7cd98101e0969f5fe2dd03bee1b1da3b0760888c))
+* 🐛 fixed bones intersection operator ([49cabaf](https://github.com/arctic-hen7/bonnie/commit/49cabafd814b8ac60abf399f5efad79c4d09f1cc))
+* 🐛 fixed bones parsing regex to allow variable initial whitespace ([fa5573f](https://github.com/arctic-hen7/bonnie/commit/fa5573faefcbb051db7fd57f5e39b86f8551cf98))
+* 🐛 fixed vector ordering in schema ([200b3db](https://github.com/arctic-hen7/bonnie/commit/200b3db8d900f7a135553ce38ffeaf40f45a1185))
+* 🐛 removed false positive warning for too many arguments ([b193e19](https://github.com/arctic-hen7/bonnie/commit/b193e19ed4dc370639669ac704d6d04dc91a3518))
+
+
+### Code Refactorings
+
+* ♻️ added ability to print warnings/info to buffer for testing ([910755d](https://github.com/arctic-hen7/bonnie/commit/910755db4afe8cc8964ad9d09da7ccef38e9a981))
+* ♻️ cleaned up imports ([3a40616](https://github.com/arctic-hen7/bonnie/commit/3a40616dcf9650a18d33fec2e08c77d7bd2497a4))
+* ♻️ removed unnecessary warning output extraction in argument interpolation ([be51340](https://github.com/arctic-hen7/bonnie/commit/be51340aa367fa671a5dd01293b5bd7bcaca520f))
+
+
+### Documentation Changes
+
+* 📝 added new help page ([cbbc806](https://github.com/arctic-hen7/bonnie/commit/cbbc8062b91d29edf322dc3594c658cd2c046662))
+* 📝 added specification for experimental syntax ([7022670](https://github.com/arctic-hen7/bonnie/commit/7022670f8ff6a3e5c3e0463bc6de4dc6852629c2))
+* 📝 added wiki submodule ([ce16314](https://github.com/arctic-hen7/bonnie/commit/ce163146c4c78a18a2cc6ad5d6e055c1703f3785))
+* 📝 updated readme and wiki ([fbaac99](https://github.com/arctic-hen7/bonnie/commit/fbaac9923d3a3227705268284fd1e2b4e03b123d))
+
 ### [0.2.1](https://github.com/arctic-hen7/bonnie/compare/v0.2.0...v0.2.1) (2021-07-02)
 
 
