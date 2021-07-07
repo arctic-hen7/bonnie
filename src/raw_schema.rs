@@ -237,7 +237,7 @@ enum Command {
         env_vars: Option<Vec<String>>,
         subcommands: Option<Scripts>, // Subcommands are fully-fledged  commands (mostly)
         order: Option<OrderString>, // If this is specified,subcomands must not specify the `args` property, it may be specified at the top-level of this script as a sibling of `order`
-        cmd: Option<CommandWrapper>,    // This is optional if subcommands are specified
+        cmd: Option<CommandWrapper>, // This is optional if subcommands are specified
     },
 }
 type OrderString = String; // A string of as yet undefined syntax that defines the progression between subcommands
@@ -332,10 +332,9 @@ impl CommandBox {
         match self {
             // In fully parsed form, all command wrappers are inside vectors for simplicity
             CommandBox::Simple(cmd_str) => vec![cmd_str.to_string()],
-            CommandBox::MultiStage(cmd_strs) => cmd_strs
-                .iter()
-                .map(|cmd_str| cmd_str.to_string())
-                .collect(),
+            CommandBox::MultiStage(cmd_strs) => {
+                cmd_strs.iter().map(|cmd_str| cmd_str.to_string()).collect()
+            }
         }
     }
 }

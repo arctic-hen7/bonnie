@@ -109,7 +109,7 @@ pub struct Command {
     pub env_vars: Vec<String>,
     pub subcommands: Option<Scripts>, // Subcommands are fully-fledged commands (mostly)
     pub order: Option<BonesDirective>, // If this is specified, subcomands must not specify the `args` property, it may be specified at the top-level of this script as a sibling of `order`
-    pub cmd: Option<CommandWrapper>, // If subcommands are provided, a root command is optional
+    pub cmd: Option<CommandWrapper>,   // If subcommands are provided, a root command is optional
 }
 impl Command {
     // Prepares a command by interpolating everything and resolving shell/tagret logic
@@ -149,7 +149,7 @@ impl Command {
             // We have either a direct command or a parent command that has irrelevant subcommands, either way we're interpolating into `cmd`
             // Get the vector of command wrappers
             let command_wrapper = self.cmd.as_ref().unwrap(); // Assuming the transformation logic works, an error can't occur here
-                                                                  // We have to do this in a for loop for `?`
+                                                              // We have to do this in a for loop for `?`
             let mut cmd_strs: Vec<BonesCore> = Vec::new();
             let (cmds, shell) = command_wrapper.get_commands_and_shell(&default_shell);
             for cmd_str in cmds {
