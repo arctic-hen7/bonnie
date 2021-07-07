@@ -61,7 +61,7 @@ fn core() -> Result<i32, String> {
     // Check if there's a cache we should read from
     // If there is but we're explicitly recaching, we should of course read directly from the source file
     let cfg;
-    if cache_exists() && !should_cache {
+    if cache_exists()? && !should_cache {
         cfg = load_from_cache(stdout)?;
     } else {
         // Get the config as a string
@@ -73,11 +73,7 @@ fn core() -> Result<i32, String> {
 
     // Check if we're caching
     if should_cache {
-        cache(&cfg)?;
-        writeln!(
-            stdout,
-            "Your Bonnie configuration has been successfully cached to './.bonnie.cache.json'! This will be used to speed up future execution. Please note that this cache will NOT be updated until you explicitly run `bonnie -c` again."
-        ).expect("Failed to write caching message.");
+        cache(&cfg, stdout)?;
         return Ok(0);
     }
 
