@@ -282,7 +282,7 @@ impl BonesCore {
         // If we're in debug, write details about the command to the given output
         // TODO only do this in testing
         if cfg!(debug_assertions) {
-            writeln!(output, "{}, {:?}", executable, args);
+            writeln!(output, "{}, {:?}", executable, args).expect("Failed to write warning.");
         }
 
         // Prepare the child process

@@ -41,7 +41,7 @@ fn core() -> Result<i32, String> {
                                                 // Determine which command we're actually running
     let (command_to_run, command_name, relevant_args) = cfg.get_command_for_args(&prog_args)?;
     // Get the Bone (item in Bones execution runtime)
-    let bone = command_to_run.prepare(&command_name, &relevant_args, &cfg.default_shell, stdout)?;
+    let bone = command_to_run.prepare(&command_name, &relevant_args, &cfg.default_shell)?;
     // Execute the Bone, getting its final exit code
     // We parse in `stdout` as the place to write command information, but that will only be done in testing
     let exit_code = bone.run(&command_name, stdout)?;

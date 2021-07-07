@@ -122,9 +122,8 @@ impl Command {
         name: &str,
         prog_args: &[String],
         default_shell: &DefaultShell,
-        output: &mut impl std::io::Write,
     ) -> Result<Bone, String> {
-        let bone = self.prepare_internal(name, prog_args, &default_shell, None, output)?;
+        let bone = self.prepare_internal(name, prog_args, &default_shell, None)?;
 
         Ok(bone)
     }
@@ -136,7 +135,6 @@ impl Command {
         prog_args: &[String],
         default_shell: &DefaultShell,
         top_level_args: Option<&[String]>,
-        output: &mut impl std::io::Write,
     ) -> Result<Bone, String> {
         let args = match top_level_args {
             Some(args) => args,
@@ -154,13 +152,8 @@ impl Command {
             let (cmds, shell) = command_wrapper.get_commands_and_shell(&default_shell);
             for cmd_str in cmds {
                 let with_env_vars = Command::interpolate_env_vars(&cmd_str, &self.env_vars)?;
-                let (with_args, remaining_args) = Command::interpolate_specific_args(
-                    &with_env_vars,
-                    name,
-                    &args,
-                    prog_args,
-                    output,
-                )?; // This needs to print warnings, so it takes an `output`
+                let (with_args, remaining_args) =
+                    Command::interpolate_specific_args(&with_env_vars, name, &args, prog_args)?;
                 let ready_cmd =
                     Command::interpolate_remaining_arguments(&with_args, &remaining_args);
                 cmd_strs.push(BonesCore {
@@ -198,7 +191,6 @@ impl Command {
                     prog_args,
                     &default_shell,
                     Some(&args),
-                    output,
                 )?;
                 cmds.insert(subcommand_name.to_string(), cmd);
             }
@@ -221,7 +213,6 @@ impl Command {
         name: &str,
         args: &[String],
         prog_args: &[String],
-        output: &mut impl std::io::Write,
     ) -> Result<(String, Vec<String>), String> {
         // Check if the correct number of arguments was provided
         // Even if we're inserting the rest later, we still need the mandatory ones
