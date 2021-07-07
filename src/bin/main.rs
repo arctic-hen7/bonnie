@@ -62,7 +62,7 @@ fn core() -> Result<i32, String> {
     // If there is but we're explicitly recaching, we should of course read directly from the source file
     let cfg;
     if cache_exists()? && !should_cache {
-        cfg = load_from_cache(stdout)?;
+        cfg = load_from_cache(stdout, None)?;
     } else {
         // Get the config as a string
         let cfg_str = get_cfg()?;
@@ -73,7 +73,7 @@ fn core() -> Result<i32, String> {
 
     // Check if we're caching
     if should_cache {
-        cache(&cfg, stdout)?;
+        cache(&cfg, stdout, None)?;
         return Ok(0);
     }
 

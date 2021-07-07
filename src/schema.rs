@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::env;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct Config {
     pub default_shell: DefaultShell,
     pub scripts: Scripts,
@@ -95,7 +95,7 @@ impl Config {
         Ok(data)
     }
 }
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct DefaultShell {
     pub generic: Shell,
     pub targets: HashMap<String, Shell>, // If the required target is not found, `generic` will be tried
@@ -106,7 +106,7 @@ pub type Shell = Vec<String>;
 pub type TargetString = String; // A target like `linux` or `x86_64-unknown-linux-musl` (see `rustup` targets)
 pub type Scripts = HashMap<String, Command>;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct Command {
     pub args: Vec<String>,
     pub env_vars: Vec<String>,
@@ -300,7 +300,7 @@ impl Command {
 }
 
 // This defines how the command runs on different targets
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct CommandWrapper {
     pub generic: CommandCore,
     pub targets: HashMap<TargetString, CommandCore>, // If empty or target not found, `generic` will be used
@@ -352,7 +352,7 @@ impl CommandWrapper {
 // This is the lowest level of command specification, there is no more recursion allowed here (thus avoiding circularity)
 // Actual command must be specified here are strings (with potential interpolation of arguments and environment variables)
 // This can also define which shell the command will use
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct CommandCore {
     pub exec: Vec<String>, // These are the actual commands that will be run (named differently to avoid collisions)
     pub shell: Option<Shell>, // If given, this is the shell it will be run in, or the `default_shell` config for this target will be used

@@ -20,8 +20,16 @@ fn get_cache_path() -> Result<String, String> {
 
 // Serializes the given parsed configuration into a JSON string and write it to disk to speed up future execution
 // This takes around 100ms on an old i7 for the testing file
-pub fn cache(cfg: &schema::Config, output: &mut impl std::io::Write) -> Result<(), String> {
-    let cache_path = get_cache_path()?;
+// We extract the path for testing (which needs to use a temporary file)
+pub fn cache(
+    cfg: &schema::Config,
+    output: &mut impl std::io::Write,
+    raw_cache_path: Option<&str>,
+) -> Result<(), String> {
+    let cache_path = match raw_cache_path {
+        Some(cache_path) => cache_path.to_string(),
+        None => get_cache_path()?,
+    };
     let cache_str = serde_json::to_string(cfg);
     let cache_str = match cache_str {
         Ok(cache_str) => cache_str,
@@ -47,8 +55,14 @@ pub fn cache_exists() -> Result<bool, String> {
 
 // This does NOT attempt to check if the cache is out of date for performance
 // The user must manually recache
-pub fn load_from_cache(output: &mut impl std::io::Write) -> Result<schema::Config, String> {
-    let cache_path = get_cache_path()?;
+pub fn load_from_cache(
+    output: &mut impl std::io::Write,
+    raw_cache_path: Option<&str>,
+) -> Result<schema::Config, String> {
+    let cache_path = match raw_cache_path {
+        Some(cache_path) => cache_path.to_string(),
+        None => get_cache_path()?,
+    };
     let cfg_str = fs::read_to_string(&cache_path);
     let cfg_str = match cfg_str {
         Ok(cfg_str) => cfg_str,
