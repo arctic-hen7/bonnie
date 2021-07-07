@@ -235,17 +235,7 @@ impl Command {
                 )
             );
         }
-        // Return an error if there are too few
-        // Warn if there are too many and we're not inserting the rest with `%%` later
-        if args.len() < prog_args.len() && !cmd_str.contains("%%") {
-            writeln!(
-                output,
-                "Warning: The command '{command}' only needs {num_required_args} argument(s), but {num_given_args} argument(s) were provided (too many). Your command will still run, this warning is just here to save time in debugging!",
-                command=name,
-                num_required_args=args.len(),
-                num_given_args=&prog_args.len()
-            ).expect("Failed to write warning.");
-        }
+        // We don't warn if there are too many and we're not inserting the rest with `%%` later because that would mean checking every potential subcommand for `%%` as well if they exist
         let mut with_args = cmd_str.to_string();
         // We need to know the index so we can correlate to the index of the argument in `args`
         for (idx, arg) in args.iter().enumerate() {
