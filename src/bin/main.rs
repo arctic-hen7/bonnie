@@ -1,5 +1,6 @@
-use lib::{get_cfg, Config, BONNIE_VERSION};
+use lib::{get_cfg, Config, BONNIE_VERSION, init, help};
 use std::env;
+use std::io::Write;
 
 // All this does is run the program and terminate with the acquired exit code
 fn main() {
@@ -28,17 +29,37 @@ fn real_main() -> i32 {
 fn core() -> Result<i32, String> {
     // Get `stdout` so we can write warnings appropriately
     let stdout = &mut std::io::stdout();
+    // Get the arguments to this program, removing the first one (something like `bonnie`)
+    let mut prog_args: Vec<String> = env::args().collect();
+    // This will panic if the first argument is not found (which is probably someone trying to fuzz us)
+    // TODO add a checker for the executable that offers to install Bonnie if it isn't already?
+    let _executable_name = prog_args.remove(0);
+    // Check for special arguments
+    if matches!(prog_args.get(0), Some(_)) {
+        if prog_args[0] == "-v" || prog_args[0] == "--version" {
+            writeln!(stdout, "You are currently running Bonnie v{}! You can see the latest release at https://github.com/arctic-hen7/bonnie/releases.", BONNIE_VERSION).expect("Failed to write version.");
+            return Ok(0);
+        } else if prog_args[0] == "-i" || prog_args[0] == "--init" {
+            init(
+                // See if a template was provided with the `--template`/`-t` flag
+                match prog_args.get(1).as_ref() {
+                    Some(arg) if &**arg == "-t" || &**arg == "--template" => prog_args.get(2).map(|x| x.to_string()),
+                    _ => None
+                }
+            )?;
+            return Ok(0);
+        } else if prog_args[0] == "-h" || prog_args[0] == "--help" {
+            help(stdout);
+            return Ok(0);
+        }
+    }
     // Get the config as a string
     let cfg_str = get_cfg()?;
     // Create a raw config object and parse it fully
     // We use `stdout` for printing warnings
     // TODO this takes meaningful millseconds for complex configs, so we should be able to cache its results in `.bonnie.cache.json` for speed in extreme cases
     let cfg = Config::new(&cfg_str)?.to_final(BONNIE_VERSION, stdout)?;
-    // Get the arguments to this program, removing the first one (something like `bonnie`)
-    let mut prog_args: Vec<String> = env::args().collect();
-    let _executable_name = prog_args.remove(0); // This will panic if the first argument is not found (which is probably someone trying to fuzz us)
-                                                // TODO add a checker for the executable that offers to install Bonnie if it isn't already?
-                                                // Determine which command we're actually running
+    // Determine which command we're actually running
     let (command_to_run, command_name, relevant_args) = cfg.get_command_for_args(&prog_args)?;
     // Get the Bone (item in Bones execution runtime)
     let bone = command_to_run.prepare(&command_name, &relevant_args, &cfg.default_shell)?;
