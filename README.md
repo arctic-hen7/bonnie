@@ -4,252 +4,100 @@
 [![Test](https://github.com/arctic-hen7/bonnie/actions/workflows/ci.yml/badge.svg)](https://github.com/arctic-hen7/bonnie/actions/workflows/ci.yml)
 [![Build and Release](https://github.com/arctic-hen7/bonnie/actions/workflows/cd.yml/badge.svg)](https://github.com/arctic-hen7/bonnie/actions/workflows/cd.yml) [![Join the chat at https://gitter.im/bonnie-cli/community](https://badges.gitter.im/bonnie-cli/community.svg)](https://gitter.im/bonnie-cli/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-Bonnie is a command aliasing tool with support for custom arguments and environment variables. If you have a super-long command that you have to run all the time, Bonnie is for you! Just define the command in `bonnie.toml` at the root of your project, and you're good to go!
+> **Simple, cross-platform, and fast command aliases with superpowers.**
+
+[Documentation][docs] • [Releases][releases] • [Contributing][contrib]
+
+Bonnie is a command aliasing tool that allows you to quickly and efficiently define short aliases for long commands that you have to repeatedly run. Here's a quick feature overview:
+
+- Supports simple key-value aliasing
+- Supports inserting custom arguments into commands
+- Supports interpolating environment variables
+- Supports adding any and all arguments given into a single place
+- Supports using different commands on different operating systems
+- Supports specifying custom shells for individual commands
+- Supports specifying default shells for different operating systems on a per-file basis
+- Supports infinitely nestable subcommands
+- Supports subcommands executed in a certain order based on their exit codes
+- Supports caching large config files after they've been parsed for performance
+- Supports initializing new config files from templates
+
+Basically, if you have commands that you routinely run in a project, Bonnie is for you. Bonnie has support for both extremely simple and extremely complex use cases, all while maintaining top-notch performance.
+
+## What does it look like?
+
+The simplest possible Bonnie configuration file would look like this:
 
 ```toml
-version = "0.2.1"
-[scripts]
-short = "really long command..."
-```
-
-For example, if you're running `docker-compose` a lot, and you have a custom environment variables file, it's annoying to type out `docker-compose --env-file .my.env ...` every time you want to do something! Bonnie can shorten this easily!
-
-```toml
-version = "0.2.1"
-[scripts]
-dc = "docker-compose --env-file .my.env %%"
-```
-
-The double percent sign (`%%`) at the end tells Bonnie to append any arguments you provide to the end of the command.
-
-You can even insert custom arguments into custom places in a custom order!
-
-```toml
-version = "0.2.1"
-[scripts]
-greet.cmd = "echo \"Greetings %lastname. I see your first name is %firstname?\""
-greet.args = [
-	"firstname",
-	"lastname"
-]
-```
-
-Now if you run `bonnie greet Donald Knuth` you should get `Greetings Knuth. I see your first name is Donald?`.
-
-Environment variables can also be interpolated and sourced from specific files, like `.env`:
-
-```toml
-version = "0.2.1"
-env_files = [
-	".env"
-]
+version = "0.3.0"
 
 [scripts]
-interpolation.cmd = "echo \"%GREETING %firstname!\""
-interpolation.args = [
-    "firstname"
-]
-interpolation.env_vars = [
-    "GREETING"
-]
+build = "echo Building"
 ```
 
-Now you can run `bonnie interpolation Donald` and you should see your custom greeting (defined in `.env`) to Donald!
+This syntax easily expands as your scripts grow in complexity to support everything up to infinitely nestable subcommands that automatically execute in a certain order based on their exit codes, running in multiple stages using custom shells and different commands on different operating systems, all while interpolating given arguments and a few environment variables. No, that's not an exaggeration, you can see an example in the [documentation][docs]!
+
+## How is this different from Bash aliases?
+
+Bash aliases are a great way of turning long commands into short commands, but they can't be easily customized on a per-folder basis. Bonnie can be. Further, if you want to interpolate custom arguments or environment variables, you'll have to write a small script for each alias. If you want subcommands, good luck! Bonnie solves all these problems with simple, intuitive syntax that just works.
+
+Bonnie is also cross-platform, even supporting running different commands on different operating systems for the same command alias.
+
+## How is this different from `Make`?
+
+GNU Make was designed to recompile parts of a project when certain files change, however its capacity to specify command aliases has drawn many to use it for that purpose. However, Make is old and has a clunky, inflexible syntax. For even simple purposes, it can be hugely overkill.
+
+By contrast, Bonnie uses TOML, which is designed specifically to be highly readable by humans, as well as a simple syntax that expands as you need it to. You don't have to write out configuration for things you'll never use.
 
 ## Installation
 
-Bonnie is built in [Rust](https://rust-lang.org), and you can either download a pre-compiled binary from [here](https://github.com/arctic-hen7/bonnie/releases) if you're running on one of the three major OSes on a 64-bit architecture or musl, or you can clone this repository and build the code yourself. I'm happy to add more binaries for more OSes by request, please file an issue for the matter.
+You can install Bonnie easily from the [releases][releases] page for Windows, MacOS, Linux, and musl. If you need Bonnie for another system, you can clone this repository and build the project using Cargo as needed. If you think we should support a particular OS in the default releases, please [open an issue][newissue] and let us know!
 
-### Using a pre-compiled binary
-
-If you head over to the [releases page](https://github.com/arctic-hen7/bonnie/releases) on this repository, you'll be able to download binaries for the most recent version of Bonnie for the three major operating systems and musl if you're on Alpine (Linux, MacOS, and Windows). GitHub Actions builds these automatically whenever a new tag is pushed, though I personally develop on Linux, so if the Windows or MacOS binaries don't work for some reason, please let me know! After downloading the binary, it should work immediately, though you may need to allow executing it as a program on Unix systems with `chmod +x ./bonnie-linux-amd64` (or whatever your download is called). Then, you can move it to a location that suits you, like `/usr/local/bin` on Linux so you can execute it from anywhere on your system.
-
-### Building manually
-
-1. Clone this repository to your local machine.
-2. Ensure you have Rust and Cargo installed.
-3. Run `cargo build --release && cp target/releases/bonnie bonnie`. The built executable will be at `./bonnie`. You can then copy this to somewhere you put binaries, like `/usr/local/bin`.
+After you've downloaded or built the binary, move it to a location where it's easily executable (e.g. `/usr/local/bin` on Linux). You'll also need to make it executable (`chmod +x ./[BINARY_NAME]` on Linux). Then, you should be able to run Bonnie from the terminal with `bonnie`!
 
 ### Installing in Docker
 
-Bonnie provides pre-built executables for Linux and Musl (the one you'll need on Alpine), which can be easily installed in a Dockerfile with this command:
+Bonnie provides pre-built executables for Linux and musl (e.g. Alpine Linux), which can be easily installed in a Dockerfile with this command:
 
 ```Dockerfile
 RUN curl -L https://github.com/arctic-hen7/bonnie/releases/download/[VERSION]/bonnie-[OS]-amd64
 ```
 
-Just replace `[VERSION]` with the latest version (see the [releases page](https://github.com/arctic-hen7/bonnie/releases)) and `[OS]` with the operating system you want the binary for (one of: `windows`, `macos`, `linux`, or `musl`).
-
-## Syntax
-
-### Basics
-
-Bonnie is a simple command-line interface that looks for a `bonnie.toml` file in whatever directory you run the command in. All configuration is defined in there. If you want to put your config file somewhere else, or name it something else, see _Using a custom config file_ below. A basic Bonnie config file should look like this:
-
-```toml
-version = "0.2.1"
-[scripts]
-```
-
-*Note: since v0.2.0, all Bonnie configuration files must contain a `version` tag.*
-
-You can define all your command aliases, which Bonnie calls _scripts_ under the `[scripts]` heading. This file uses TOML, which is like JSON, but much easier to read for humans. You can learn more about it and the syntax it supports at [toml.io](https://toml.io). If you use any invalid TOML syntax or you don't define scripts properly in your config, Bonnie will tell you straight away, without trying to run the command you specified, so don't worry about something blowing up!
-
-### Command with arguments
-
-Bonnie supports inserting arguments into commands. This requires you to use the following syntax in `bonnie.toml`:
-
-```toml
-version = "0.2.1"
-[scripts]
-greet.cmd = "echo \"Greetings %lastname. I see your first name is %firstname?\""
-greet.args = [
-	"firstname",
-	"lastname"
-]
-```
-
-In that example, you denote the script by specifying the system command to run with the key `greet.cmd` (where `greet` is the script's name). You can then specify arguments with `greet.args`, setting that equal to an array containing the names of all the arguments in the script. You can have as many arguments as you want! Back in the `greet.cmd` value, you define where each argument goes by writing `%firstname`, where `firstname` is the name of the argument. You can do this in any order, the order that matters is that of the `greet.args` array, that's the order you'll be expected to supply arguments in when you run the script. If you stuff up and forget to put in an argument placeholder, Bonnie will tell you and not run the command. If you misspell an argument placeholder, Bonnie will tell you.
-
-You can if you want to insert one argument more than once, Bonnie just replaces all instances of `%firstname` or the like, so that should work fine (not part of the test suite though).
-
-As yet, Bonnie doesn't support optional arguments or default values, but hopefully that won't inconvenience you too much! If enough people want those features, I'll implement them at some point in the future.
-
-### Environment variable interpolation
-
-Sometimes, you'll want to add a value of an environment variable into a Bonnie command, for example if you've got a variable `$APP_PORT` that defines which port your app runs on and you need to use that in an alias. Bonnie fully supports environment variable interpolation by using long-from notation and the `env_vars` key, just as you would with arguments:
-
-```toml
-version = "0.2.1"
-[scripts]
-interpolation.cmd = "echo \"%GREETING %firstname!\""
-interpolation.args = [
-    "firstname"
-]
-interpolation.env_vars = [
-    "GREETING"
-]
-```
-
-The above example uses both environment variables and user-provided arguments, but you certainly don't have to use both together in the same command. If you do decide to use them together, any argument that has the same name as an environment variable will be inserted before the environment variable, which is why it's recommended to have your arguments in camelCase and your environment variables in SCREAMING_SNAKE_CASE.
-
-Any environment variables given to the Bonnie process will be available to be interpolated into commands, so for that above example you'd need to run the following:
-
-```
-GREETING="Hello, my dear friend" bonnie interpolation Donald
-```
-
-However, especially in complex projects, environment variables are very often stored in files like `.env`. Bonnie can load these natively with no extra work by using the `env_files` key in `bonnie.toml`:
-
-```toml
-version = "0.2.1"
-env_files = [
-	".env"
-]
-
-[scripts]
-interpolation.cmd = "echo \"%GREETING %firstname!\""
-interpolation.args = [
-    "firstname"
-]
-interpolation.env_vars = [
-    "GREETING"
-]
-```
-
-Please note the space after the definition of `env_files`, if that's not there TOML will read the config file as invalid!
-
-Now, as long as `.env` exists, Bonnie will interpolate `$GREETING` without any extra input from you! If anything fails, Bonnie will gracefully return an error.
-
-### Shorthand
-
-Many of the commands you specify won't need arguments, they'll just be simple aliases. These can be specified trivially by just writing a key-value pair:
-
-```toml
-version = "0.2.1"
-[scripts]
-foobar = "echo Hello World"
-```
-
-You don't need `.cmd` or `.args`, you can just define it as `foobar`, where that's the name of the script. This is the most common way to define scripts with Bonnie.
-
-### Appending arguments
-
-There are a lot of use cases where you'd want any arguments you provide to be appended to the end of a Bonnie script (this is the default behavior of NPM and Yarn scripts). You can do this easily in Bonnie by using shorthand syntax and adding a `%%` to the end of the command like so:
-
-```toml
-version = "0.2.1"
-[scripts]
-dc = "docker-compose --env-file .my.env %%"
-```
-
-Note that you cannot combine this appending behavior with custom arguments yet, and Bonnie will tell you if you try to (and won't run the command). If enough people want this combination to be possible, I'm happy to implement the feature at some point in the future.
-
-Note that when you run a script that appends arguments, it will accept any number of arguments, including 0. Bonnie will tell you neither about too many or too few arguments provided. If enough people want support for the allowed number of arguments to be able to be specified by a range, I'm happy to implement that feature.
-
-As of yet, you can only append all arguments at the **end** of a command, nowhere else. This does mean that if you try `echo '%%'` (note the ending `'`), Bonnie will not append any arguments, and will treat that as ordinary shorthand syntax. Support for appending arguments inside a script is on the roadmap.
-
-## Escaping %
-
-Bonnie uses `%` to denote arguments in commands. If you have something like `%firstnameBlah`, where `firstname` is the argument, Bonnie will only replace that. Any instances of `%` signs not connected to arguments or other special flags (right now only the `%%` append flag) will be left untouched. If you need to put `%firstname` in and not have it replaced by an argument named `firstname`, you'll have to pick a different argument name.
-
-Slightly surprising behaviour can be if you have two arguments, one `firstname` and the other `first`. If `first` is provided before `firstname`, Bonnie will replace the `%first` part of `%firstname` and then tell you it couldn't insert the `firstname` argument. In other words, if one argument is a substring of another from index 0 (e.g. `first` and `firstname`) and you provide the substring before the superstring, Bonnie will accidentally mangle instances of the superstring argument and then complain that said argument couldn't be inserted. Basically, **don't have arguments that are substrings of each other from index 0**, they'll behave weirdly in certain cases.
-
-## Running commands
-
-After you've set up your `bonnie.toml` file, you can run any of the commands you've defined easily like so:
-
-```
-bonnie [script_name] [arg1] [arg2] [etc.]
-```
-
-Just type the name of the script, and then add any arguments it expects. If you don't give enough arguments, Bonnie will tell you and won't run the command. If you provide too many, Bonnie **will** run the command, and will add a warning telling you you've provided too many arguments. That'll be written to `stdout` rather than `stderr`, so if you're parsing the output of a Bonnie script, make sure you've got the right number of arguments, or you're ready to handle that warning.
-
-The output of the command (`stdout` and `stderr`) will be piped directly to the corresponding properties of the Bonnie process. All commands are run as child processes, and they do **not** inherit the `stdin` of Bonnie. If you're trying to pipe data into a script, unfortunately that isn't yet possible. If enough people would find this helpful, then I'm happy to implement it at some point in the future.
-
-## Using a custom config file
-
-There may be cases in which your bonnie config file is in a different directory, and these can easily be handled by setting the `BONNIE_CONF` environment variable. On Unix systems (MacOS and Linux), this can be done by running `BONNIE_CONF=path/to/bonnie.toml bonnie ...`.
-
-## Reserved commands
-
-Bonnie does have a few internal commands, and your own scripts defined in `bonnie.toml` cannot conflict with these. **You won't be warned about this**, Bonnie will just completely ignore your scripts whenever you run one of these commands:
-
-- `bonnie help` - displays the Bonnie documentation
-- `bonnie init` - creates a new `bonnie.toml` file in the current directory (won't override existing files)
-
-## Motivation
-
-I used to use JavaScript a lot, where I had access to beautiful tools like Yarn and NPM scripts. I learned to love those a lot, and then I switched to Elm and Rust, and I was suddenly deprived of a nice script tool! `Make` was the most obvious option, but it felt a little dated and cumbersome for something so simple, so I decided to make my own version while I was learning Rust! This is that.
-
-## Aim
-
-Right now, Bonnie is a really simple development automation tool, but in future, I may expand its capabilities so that it becomes a proper build tool with highly extensible scripting functionalities!
+Just replace `[VERSION]` with the latest version (see the [releases page][releases]) and `[OS]` with the operating system you want the binary for (one of: `windows`, `macos`, `linux`, or `musl`).
 
 ## Why 'Bonnie'?
 
-No particular reason, the name just sounded nice, and I thought I may as well name this program Bonnie. No offense intended whatsoever to those named Bonnie!
+No particular reason, the name just sounds nice. No offense intended whatsoever to those named Bonnie!
 
 ## Stability
 
-Right now, Bonnie is in beta because of the youth of the project and to allow time for bugs to be reported. I use the project daily, and I'll continue adding features on the roadmap as I do so. Right now, there are some parts of Bonnie that aren't covered by automated tests (though I test those parts manually before any releases), so I'll complete those before the project moves into stable 1.0. Right now, v1.0 will probably be released some time in May 2021, but the program is perfectly fine to use up until that point!
+Bonnie is very fully-featured already, though the project is still under active development, and there are a few key features still to be added before v1.0.0. Also, Bonnie's ordered subcommands system (see the [documentation][docs]) is very novel, and we need to see how it performs over a longer period of time in production.
+
+Bonnie was originally intended to move to stable in May 2021, though a full rewrite of the program and the introduction of nearly every major feature the program now has occurred in June, delaying that deadline. Right now, Bonnie is scheduled to go to stable by the end of September 2021, but the program is used daily and is actively maintained, so don't let that discourage you!
 
 ## Roadmap
 
-* [x] Support environment variable interpolation
-- [ ] Add automated tests for the warning system when too many arguments are provided
-- [ ] Add automated tests for the command running system
-- [ ] Support inserting all arguments somewhere into a command rather than just at the end
-- [ ] Support a combination of custom arguments and appending arguments
-- [ ] Support optional arguments
-- [ ] Support giving default values for optional arguments
-- [ ] Support specifying the upper and lower bounds of acceptable numbers of appended arguments with a range
-- [ ] Support piping data into Bonnie scripts with a special opening flag (maybe `%[stdin]`?)
+* [ ] Support default global template in `~/.bonnie/template.toml`
+* [ ] Support optional arguments
+* [ ] Support giving default values for optional arguments
+* [ ] Support specifying the upper and lower bounds of acceptable numbers of appended arguments with a range
+* [ ] Support piping data into Bonnie scripts with a special opening flag (maybe `%[stdin]`?)
 
-## Authors
+## Changelog
 
-- arctic_hen7
+You can see all the recent updates to the project in the [changelog](./CHANGELOG.md).
+
+If there's anything you think should be on here, or if you find a bug, please [open an issue][newissue] and let us know!
+
+## Contributing
+
+Thanks so much! You can learn about how to contribute to Bonnie by reading [the contributing guide][contrib], and please remember to stick to the [code of conduct](./CODE_OF_CONDUCT.md).
 
 ## License
 
-See [LICENSE.txt](./LICENSE.txt)
+See [LICENSE](./LICENSE).
+
+[docs]: https://github.com/arctic-hen7/bonnie/wiki
+[releases]: https://github.com/arctic-hen7/bonnie/releases
+[contrib]: ./CONTRIBUTING.md
+[newissue]: https://github.com/arctic-hen7/bonnie/issues/new
