@@ -191,8 +191,8 @@ impl BonesOperator {
                     for operator in operators {
                         let op_matches = operator.matches(exit_code);
                         // We only need one of them to be false (aka. all of them have to be true)
+                        is_match = op_matches;
                         if !op_matches {
-                            is_match = false;
                             break;
                         }
                     }
