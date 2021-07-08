@@ -100,4 +100,4 @@ See [LICENSE](./LICENSE).
 [docs]: https://github.com/arctic-hen7/bonnie/wiki
 [releases]: https://github.com/arctic-hen7/bonnie/releases
 [contrib]: ./CONTRIBUTING.md
-[newissue]: https://github.com/arctic-hen7/bonnie/issues/new
+[newissue]: https://github.com/arctic-hen7/bonnie/issues/new/choose
