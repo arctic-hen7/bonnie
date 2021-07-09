@@ -314,10 +314,7 @@ fn succeeds_with_multistage() {
         BONNIE_VERSION,
         ["basic"]
     );
-    assert_contains_ordered!(
-        output,
-        ["sh, [\"-c\", \"(exit 0) && exit 1\"]"]
-    );
+    assert_contains_ordered!(output, ["sh, [\"-c\", \"(exit 0) && exit 1\"]"]);
 }
 #[test]
 #[cfg(target_os = "linux")] // This test will only work on Linux
@@ -339,9 +336,7 @@ fn succeeds_with_multistage_with_interpolation() {
     );
     assert_contains_ordered!(
         output,
-        [
-            "sh, [\"-c\", \"echo Hello foo bar && echo Name && exit 1\"]"
-        ]
+        ["sh, [\"-c\", \"echo Hello foo bar && echo Name && exit 1\"]"]
     );
 }
 #[test]
@@ -374,9 +369,7 @@ fn succeeds_with_multistage_and_interpolation_unordered_subcommands() {
     let output1 = expect_exit_code!(1, cfg, BONNIE_VERSION, ["basic", "test", "Name", "foo bar"]);
     assert_contains_ordered!(
         output1,
-        [
-            "sh, [\"-c\", \"echo Hello foo bar && echo Name && exit 1\"]"
-        ]
+        ["sh, [\"-c\", \"echo Hello foo bar && echo Name && exit 1\"]"]
     );
     let output2 = expect_exit_code!(1, cfg, BONNIE_VERSION, ["basic", "other"]);
     assert_contains_ordered!(output2, ["sh, [\"-c\", \"exit 1\"]"]);
@@ -446,9 +439,7 @@ fn succeeds_with_os_specific_multistage_and_interpolation_cmd() {
     println!("{:?}", output);
     assert_contains_ordered!(
         output,
-        [
-            "sh, [\"-c\", \"echo Hello foo bar && echo Name && exit 1\"]"
-        ]
+        ["sh, [\"-c\", \"echo Hello foo bar && echo Name && exit 1\"]"]
     );
 }
 #[test]
@@ -504,9 +495,7 @@ fn succeeds_with_custom_shell_and_os_specificity_and_multistage_and_interpolatio
     println!("{:?}", output);
     assert_contains_ordered!(
         output,
-        [
-            "bash, [\"-c\", \"echo Hello foo bar && echo Name && exit 1\"]"
-        ]
+        ["bash, [\"-c\", \"echo Hello foo bar && echo Name && exit 1\"]"]
     );
 }
 #[test]
