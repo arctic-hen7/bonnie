@@ -309,14 +309,14 @@ fn succeeds_with_multistage() {
         1,
         r#"
         [scripts]
-        basic = ["exit 0", "exit 1"]
+        basic = ["(exit 0)", "exit 1"]
         "#,
         BONNIE_VERSION,
         ["basic"]
     );
     assert_contains_ordered!(
         output,
-        ["sh, [\"-c\", \"exit 0\"]", "sh, [\"-c\", \"exit 1\"]"]
+        ["sh, [\"-c\", \"(exit 0) && exit 1\"]"]
     );
 }
 #[test]
@@ -328,7 +328,7 @@ fn succeeds_with_multistage_with_interpolation() {
         env_files = ["src/.env"]
         [scripts]
         basic.cmd = [
-            "echo %SHORTGREETING %% && exit 0",
+            "echo %SHORTGREETING %%",
             "echo %name && exit 1"
         ]
         basic.args = ["name"]
@@ -340,8 +340,7 @@ fn succeeds_with_multistage_with_interpolation() {
     assert_contains_ordered!(
         output,
         [
-            "sh, [\"-c\", \"echo Hello foo bar && exit 0\"]",
-            "sh, [\"-c\", \"echo Name && exit 1\"]"
+            "sh, [\"-c\", \"echo Hello foo bar && echo Name && exit 1\"]"
         ]
     );
 }
@@ -365,7 +364,7 @@ fn succeeds_with_multistage_and_interpolation_unordered_subcommands() {
     env_files = ["src/.env"]
     [scripts]
     basic.subcommands.test.cmd = [
-        "echo %SHORTGREETING %% && exit 0",
+        "echo %SHORTGREETING %%",
         "echo %name && exit 1"
     ]
     basic.subcommands.test.args = ["name"]
@@ -376,8 +375,7 @@ fn succeeds_with_multistage_and_interpolation_unordered_subcommands() {
     assert_contains_ordered!(
         output1,
         [
-            "sh, [\"-c\", \"echo Hello foo bar && exit 0\"]",
-            "sh, [\"-c\", \"echo Name && exit 1\"]"
+            "sh, [\"-c\", \"echo Hello foo bar && echo Name && exit 1\"]"
         ]
     );
     let output2 = expect_exit_code!(1, cfg, BONNIE_VERSION, ["basic", "other"]);
@@ -436,7 +434,7 @@ fn succeeds_with_os_specific_multistage_and_interpolation_cmd() {
         [scripts]
         basic.cmd.generic = "exit 2"
         basic.cmd.targets.linux = [
-            "echo %SHORTGREETING %% && exit 0",
+            "echo %SHORTGREETING %%",
             "echo %name && exit 1"
         ]
         basic.args = ["name"]
@@ -449,8 +447,7 @@ fn succeeds_with_os_specific_multistage_and_interpolation_cmd() {
     assert_contains_ordered!(
         output,
         [
-            "sh, [\"-c\", \"echo Hello foo bar && exit 0\"]",
-            "sh, [\"-c\", \"echo Name && exit 1\"]"
+            "sh, [\"-c\", \"echo Hello foo bar && echo Name && exit 1\"]"
         ]
     );
 }
@@ -471,6 +468,21 @@ fn succeeds_with_custom_shell() {
 }
 #[test]
 #[cfg(target_os = "linux")] // This test will only work on Linux
+fn succeeds_with_custom_shell_with_delimiter() {
+    let output = expect_exit_code!(
+        0,
+        r#"
+        [scripts]
+        basic.cmd.exec = "exit 0"
+        basic.cmd.shell = { parts = ["bash", "-c", "{COMMAND}"], delimiter = " && " }
+        "#,
+        BONNIE_VERSION,
+        ["basic"]
+    );
+    assert_contains_ordered!(output, ["bash, [\"-c\", \"exit 0\"]"]);
+}
+#[test]
+#[cfg(target_os = "linux")] // This test will only work on Linux
 fn succeeds_with_custom_shell_and_os_specificity_and_multistage_and_interpolation() {
     let output = expect_exit_code!(
         1,
@@ -479,7 +491,7 @@ fn succeeds_with_custom_shell_and_os_specificity_and_multistage_and_interpolatio
         [scripts]
         basic.cmd.generic = "exit 2"
         basic.cmd.targets.linux.exec = [
-            "echo %SHORTGREETING %% && exit 0",
+            "echo %SHORTGREETING %%",
             "echo %name && exit 1"
         ]
         basic.cmd.targets.linux.shell = ["bash", "-c", "{COMMAND}"]
@@ -493,8 +505,7 @@ fn succeeds_with_custom_shell_and_os_specificity_and_multistage_and_interpolatio
     assert_contains_ordered!(
         output,
         [
-            "bash, [\"-c\", \"echo Hello foo bar && exit 0\"]",
-            "bash, [\"-c\", \"echo Name && exit 1\"]"
+            "bash, [\"-c\", \"echo Hello foo bar && echo Name && exit 1\"]"
         ]
     );
 }
@@ -532,6 +543,21 @@ fn uses_generic_default_shell() {
         0,
         r#"
         default_shell.generic = ["bash", "-c", "{COMMAND}"]
+        [scripts]
+        basic = "exit 0"
+        "#,
+        BONNIE_VERSION,
+        ["basic"]
+    );
+    assert_contains_ordered!(output, ["bash, [\"-c\", \"exit 0\"]"]);
+}
+#[test]
+#[cfg(target_os = "linux")] // This test will only work on Linux
+fn uses_generic_default_shell_with_delimiter() {
+    let output = expect_exit_code!(
+        0,
+        r#"
+        default_shell.generic = { parts = ["bash", "-c", "{COMMAND}"], delimiter = " && " }
         [scripts]
         basic = "exit 0"
         "#,
@@ -667,7 +693,7 @@ fn succeeds_with_everything() {
         [scripts]
         basic.subcommands.test.cmd.generic = "exit 5"
         basic.subcommands.test.cmd.targets.linux.exec = [
-            "echo %SHORTGREETING %% && exit 0",
+            "echo %SHORTGREETING %%",
             "echo %name && exit 1"
         ]
         basic.subcommands.test.env_vars = ["SHORTGREETING"]
@@ -695,12 +721,10 @@ fn succeeds_with_everything() {
     assert_contains_ordered!(
         output,
         [
-            "sh, [\"-c\", \"echo Hello foo bar && exit 0\"]",
-            "sh, [\"-c\", \"echo Name && exit 1\"]",
+            "sh, [\"-c\", \"echo Hello foo bar && echo Name && exit 1\"]",
             "sh, [\"-c\", \"exit 2\"]",
             "sh, [\"-c\", \"exit 3\"]",
-            "sh, [\"-c\", \"echo Hello foo bar && exit 0\"]",
-            "sh, [\"-c\", \"echo Name && exit 1\"]"
+            "sh, [\"-c\", \"echo Hello foo bar && echo Name && exit 1\"]"
         ]
     );
 }

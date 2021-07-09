@@ -101,8 +101,13 @@ pub struct DefaultShell {
     pub targets: HashMap<String, Shell>, // If the required target is not found, `generic` will be tried
 }
 // Shells are a series of values, the first being the executable and the rest being raw arguments
-// One of those arguments must contain '{COMMAND}', where the command will be interpoalted
-pub type Shell = Vec<String>;
+// One of those arguments must contain '{COMMAND}', where the command will be interpolated
+// They also specify a delimiter to use to separate multistage commands
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct Shell {
+    pub parts: Vec<String>,
+    pub delimiter: String,
+}
 pub type TargetString = String; // A target like `linux` or `x86_64-unknown-linux-musl` (see `rustup` targets)
 pub type Scripts = HashMap<String, Command>;
 
@@ -149,9 +154,11 @@ impl Command {
         {
             // We have either a direct command or a parent command that has irrelevant subcommands, either way we're interpolating into `cmd`
             // Get the vector of command wrappers
-            let command_wrapper = self.cmd.as_ref().unwrap(); // Assuming the transformation logic works, an error can't occur here
-                                                              // We have to do this in a for loop for `?`
-            let mut cmd_strs: Vec<BonesCore> = Vec::new();
+            // Assuming the transformation logic works, an error can't occur here
+            let command_wrapper = self.cmd.as_ref().unwrap();
+            // Interpolate for each individual command
+            // We have to do this in a for loop for `?`
+            let mut cmd_strs: Vec<String> = Vec::new();
             let (cmds, shell) = command_wrapper.get_commands_and_shell(&default_shell);
             for cmd_str in cmds {
                 let with_env_vars = Command::interpolate_env_vars(&cmd_str, &self.env_vars)?;
@@ -159,15 +166,17 @@ impl Command {
                     Command::interpolate_specific_args(&with_env_vars, name, &args, prog_args)?;
                 let ready_cmd =
                     Command::interpolate_remaining_arguments(&with_args, &remaining_args);
-                cmd_strs.push(BonesCore {
-                    cmd: ready_cmd,
-                    shell: shell.to_vec(),
-                });
+                cmd_strs.push(ready_cmd);
             }
 
             Ok(
                 // This does not contain recursive `BonesCommands`, so it's `Bone::Simple`
-                Bone::Simple(cmd_strs),
+                Bone::Simple(BonesCore {
+                    // We join every stage of the command into one, separated by the given delimiters
+                    cmd: cmd_strs.join(&shell.delimiter),
+                    // The shell is then just the vector of executable and arguments
+                    shell: shell.parts.to_vec(),
+                }),
             )
         } else if matches!(self.subcommands, Some(_)) && matches!(self.order, Some(_)) {
             // First, we resolve all the subcommands to vectors of strings to actually run
@@ -346,7 +355,7 @@ impl CommandWrapper {
             }
         };
 
-        (cmd.to_vec(), shell.to_vec())
+        (cmd.to_vec(), shell.clone())
     }
 }
 // This is the lowest level of command specification, there is no more recursion allowed here (thus avoiding circularity)

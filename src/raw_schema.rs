@@ -108,18 +108,18 @@ impl Config {
         let default_shell = match &self.default_shell {
             // If we're just given a shell string, use it as the generic shell
             Some(DefaultShell::Simple(generic)) => schema::DefaultShell {
-                generic: generic.to_vec(),
+                generic: generic.parse(),
                 targets: HashMap::new(),
             },
             // If we have all the information we need, just transform it
             Some(DefaultShell::Complex { generic, targets }) => schema::DefaultShell {
-                generic: generic.to_vec(),
+                generic: generic.parse(),
                 targets: match targets {
                     Some(raw_targets) => {
                         // This is just transformation logic
                         let mut targets = HashMap::new();
                         for (target_name, shell) in raw_targets.iter() {
-                            targets.insert(target_name.to_string(), shell.to_vec());
+                            targets.insert(target_name.to_string(), shell.parse());
                         }
                         targets
                     }
@@ -232,7 +232,34 @@ enum DefaultShell {
         targets: Option<HashMap<String, Shell>>,
     },
 }
-type Shell = Vec<String>; // A vector of the executable followed by raw arguments thereto, the location for command interpolation is specified with '{COMMAND}'
+// A vector of the executable followed by raw arguments thereto, the location for command interpolation is specified with '{COMMAND}'
+// A custom delimiter can also be specified (the default is ` && `), this should include spaces if necessary
+// Note that the default for PowerShell uses `;` instead
+#[derive(Debug, Clone, Deserialize)]
+#[serde(untagged)]
+pub enum Shell {
+    Simple(Vec<String>),
+    WithDelimiter {
+        parts: Vec<String>,
+        delimiter: String,
+    },
+}
+impl Shell {
+    fn parse(&self) -> schema::Shell {
+        match self {
+            Shell::Simple(parts) => schema::Shell {
+                parts: parts.to_vec(),
+                // The default delimiter is ` && ` in all cases (supported everywhere except Windows PowerShell)
+                delimiter: " && ".to_string(),
+            },
+            Shell::WithDelimiter { parts, delimiter } => schema::Shell {
+                parts: parts.to_vec(),
+                // The default delimiter is `&&` in all cases (supported everywhere except Windows PowerShell)
+                delimiter: delimiter.to_string(),
+            },
+        }
+    }
+}
 type TargetString = String; // A target like `linux` or `x86_64-unknown-linux-musl` (see `rustup` targets)
 type Scripts = HashMap<String, Command>;
 
@@ -317,7 +344,7 @@ impl CommandCore {
                 shell: Some(shell),
             } => schema::CommandCore {
                 exec: exec.parse(),
-                shell: Some(shell.to_vec()),
+                shell: Some(shell.parse()),
             },
             // If no shell was given in the complex form, the expansion is the same as the simple form
             CommandCore::WithShell { exec, shell: None } => schema::CommandCore {

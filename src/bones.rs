@@ -9,7 +9,7 @@ use std::process::Command as OsCommand;
 // This really represents (from Bonnie's perspective) a future for an exit code
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub enum Bone {
-    Simple(Vec<BonesCore>),
+    Simple(BonesCore),
     Complex(BonesCommand),
 }
 impl Bone {
@@ -17,24 +17,9 @@ impl Bone {
     // This takes an optional buffer to write data about the command being executed in testing
     pub fn run(&self, name: &str, output: &mut impl std::io::Write) -> Result<i32, String> {
         match self {
-            Bone::Simple(cores) => {
-                // Execute each simple command core
-                // There is no logic to move between these, they're executed sequentially
-                // If one fails, we terminate with its exit code
-                let mut exit_code = 0;
-                for core in cores {
-                    let core_exit_code = core.execute(name, output)?;
-                    match core_exit_code {
-                        // If it succeeded, we continue onto the next command
-                        0 => continue,
-                        // If it failed, set the exit code to terminate with and break (we don't run the remaining commands)
-                        _ => {
-                            exit_code = core_exit_code;
-                            break;
-                        }
-                    }
-                }
-
+            Bone::Simple(core) => {
+                // Execute the command core
+                let exit_code = core.execute(name, output)?;
                 // Return the exit code of the command sequence
                 Ok(exit_code)
             }
@@ -258,35 +243,38 @@ impl BonesOperator {
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct BonesCore {
-    pub cmd: String,
+    pub cmd: String,        // All the stages are joined by the delimiter
     pub shell: Vec<String>, // Vector of executable and arguments thereto
 }
 impl BonesCore {
     fn execute(&self, name: &str, output: &mut impl std::io::Write) -> Result<i32, String> {
-        // Interpolate the command into the given shell
-        // The shell might inteprolate it multiple times or not at all, we don't particularly care (shells can be as weird as they like)
-        let cmd_parts: Vec<String> = self
-            .shell
-            .iter()
-            .map(|part| part.replace("{COMMAND}", &self.cmd))
-            .collect();
-        // Get the executable from that vector (the first element)
-        let executable = cmd_parts.get(0);
+        // Get the executable from the shell (the first element)
+        let executable = self.shell.get(0);
         let executable = match executable {
+            // If the shell is not universal to all stages, we return an error
+            // We should not have to interpolate anything into the executable
+            Some(executable) if executable.contains("{COMMAND}") => return Err(format!("The shell for the command '{}' attempts to interpolate the command in its first element, which was expected to be a string literal with no interpolation, as it is an executable.", name)),
             Some(executable) => executable,
-            None => return Err(String::from("An empty shell was provided. Shells must have at least one element as an executable to be invoked."))
+            None => return Err(format!("The shell for the command '{}' is empty. Shells must contain at least one element as an executable to invoke.", name))
         };
-        // Get the rest of the arguments to that executable
-        // This won't panic (we handled if the zero index doesn't exist in the above `match` statement)
-        let args: Vec<String> = cmd_parts[1..].to_vec();
+        // Get the arguments to that executable
+        // We interpolate the command in where necessary
+        let args = self.shell.get(1..);
+        let args: Vec<String> = match args {
+            Some(args) => args
+                .iter()
+                .map(|part| part.replace("{COMMAND}", &self.cmd))
+                .collect(),
+            // If there are no arguments, we really don't care, shells can be as weird as they want
+            None => Vec::new(),
+        };
         // If we're in debug, write details about the command to the given output
         // TODO only do this in testing
         if cfg!(debug_assertions) {
             writeln!(output, "{}, {:?}", executable, args).expect("Failed to write warning.");
         }
-
         // Prepare the child process
-        let child = OsCommand::new(&executable).args(&args).spawn();
+        let child = OsCommand::new(&executable).args(args).spawn();
 
         // The child must be mutable so we can wait for it to finish later
         let mut child = match child {

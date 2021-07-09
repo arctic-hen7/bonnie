@@ -11,7 +11,7 @@ default_env.targets.linux = ["bash", "-c", "{COMMAND}"]
 [scripts]
 basic.subcommands.test.cmd.generic = "exit 5"
 basic.subcommands.test.cmd.targets.linux.exec = [
-    "echo %SHORTGREETING %% && exit 0",
+    "echo %SHORTGREETING %%",
     "echo %name && exit 1"
 ]
 basic.subcommands.test.env_vars = ["SHORTGREETING"]

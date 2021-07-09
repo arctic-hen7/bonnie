@@ -1,11 +1,11 @@
 # This file defines experimental syntax!
 
-version = "0.3.0"
+version = "0.3.1"
 env_files = [
     ".env"
 ]
 default_shell.generic = ["sh", "-c", "{COMMAND}"] # This will be used if the target being run on is not found in the following list
-default_shell.targets.windows = ["cmd", "/C", "{COMMAND}"]
+default_shell.targets.windows = { parts = ["cmd", "/C", "{COMMAND}"], delimiter = " && " }
 
 [scripts]
 # The most basic possible syntax
@@ -32,6 +32,11 @@ super_versatile.cmd.targets.magic_os.shell = ["please", "run", "command", "{COMM
 multistage = [
     "echo \"Part 1\"",
     "echo \"Part 2\""
+]
+# This command has multiple parts that show they're executed in the same shell
+multistage_shell_demo = [
+    "cd /tmp",
+    "pwd"
 ]
 # This command has multiple parts that will be run in series, with interpolation
 multistage_with_interpolation.cmd = [
