@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.3.1](https://github.com/arctic-hen7/bonnie/compare/v0.3.0...v0.3.1) (2021-07-09)
+
+
+### Bug Fixes
+
+* 🐛 added custom delimiter support in shells and made default behaviour logical ([dd348ba](https://github.com/arctic-hen7/bonnie/commit/dd348ba4b22d07ca05f2938c868a7171650e957b)), closes [#17](https://github.com/arctic-hen7/bonnie/issues/17)
+
+
+### Documentation Changes
+
+* **wiki:** 📝 updated docs ([d910397](https://github.com/arctic-hen7/bonnie/commit/d910397ca83f91ad77ad603e5c0eaeca29300196))
+* **wiki:** 📝 updated new issue link for templates ([1507fb7](https://github.com/arctic-hen7/bonnie/commit/1507fb72261f6ae7535646ed1ff3ea2dfa9bd838))
+* **wiki:** 📝 updated wiki ([66be949](https://github.com/arctic-hen7/bonnie/commit/66be94933705f2789afa841dddafd3ca6f43987b))
+* **wiki:** 📝 updated wiki ([f348de4](https://github.com/arctic-hen7/bonnie/commit/f348de40d956cabc6aa449e70a6e2e712db88f50))
+* **wiki:** 📝 updated wiki ([a159aeb](https://github.com/arctic-hen7/bonnie/commit/a159aeb6d1aa1b4b6d852824ee24921d4d18343d))
+* **wiki:** 📝 updated wiki ([2c6cc8d](https://github.com/arctic-hen7/bonnie/commit/2c6cc8d28e0370b147c9f889dd3f04519f8dc798))
+* 📝 wrote the first iteration of the wiki ([be5f16c](https://github.com/arctic-hen7/bonnie/commit/be5f16c29b8d31b45320915ad3f0d4b6a606d6ef))
+
 ## [0.3.0](https://github.com/arctic-hen7/bonnie/compare/v0.2.1...v0.3.0) (2021-07-07)
 
 
