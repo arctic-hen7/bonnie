@@ -1,6 +1,7 @@
 {
     "conventionalCommits.scopes": [
         "install_scripts",
-        "wiki"
+        "wiki",
+        "init"
     ]
 }

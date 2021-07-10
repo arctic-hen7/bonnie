@@ -8,10 +8,11 @@ edition = "2018"
 
 [dependencies]
 toml = "0.5.8"
-serde = { version = "1.0.125", features = ["derive"] }
+serde = { version="1.0.125", features=["derive"] }
 serde_json = "1.0.64"
 dotenv = "0.15.0"
 regex = "1.5.4"
+home = "0.5.3"
 
 [lib]
 name = "lib"
