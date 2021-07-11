@@ -16,7 +16,7 @@ pub fn get_template_path() -> Result<PathBuf, Error> {
         .map(|x| x.join(".bonnie").join("template.toml"))
         .ok_or(Error::CouldNotGetHomeDirectory)?;
 
-    Ok(env::var("BONNIE_TEMPLATE_PATH")
+    Ok(env::var("BONNIE_TEMPLATE")
         .map(|x| PathBuf::from(x))
         .unwrap_or(default_template_path))
 }
