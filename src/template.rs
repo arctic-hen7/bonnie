@@ -11,14 +11,18 @@ pub enum Error {
     Other(io::Error),
 }
 
-pub fn get_default() -> Result<String, Error> {
+pub fn get_template_path() -> Result<PathBuf, Error> {
     let default_template_path = home_dir()
         .map(|x| x.join(".bonnie").join("template.toml"))
         .ok_or(Error::CouldNotGetHomeDirectory)?;
 
-    let path = env::var("BONNIE_TEMPLATE_PATH")
+    Ok(env::var("BONNIE_TEMPLATE_PATH")
         .map(|x| PathBuf::from(x))
-        .unwrap_or(default_template_path);
+        .unwrap_or(default_template_path))
+}
+
+pub fn get_default() -> Result<String, Error> {
+    let path = get_template_path()?;
 
     let template = fs::read_to_string(path);
 
