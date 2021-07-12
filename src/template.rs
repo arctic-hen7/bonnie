@@ -7,7 +7,7 @@ use std::process::Command as OsCommand;
 
 pub fn get_template_path() -> Result<PathBuf, String> {
     let default_template_path = home_dir()
-        .map(|x| x.join(".bonnie").join("template.toml"))
+        .map(|path| path.join(".bonnie").join("template.toml"))
         .ok_or(format!(
             "I could not find your home directory. {}",
             if cfg!(target_os = "windows") {
@@ -18,7 +18,7 @@ pub fn get_template_path() -> Result<PathBuf, String> {
         ))?;
 
     Ok(env::var("BONNIE_TEMPLATE")
-        .map(|x| PathBuf::from(x))
+        .map(|value| PathBuf::from(value))
         .unwrap_or(default_template_path))
 }
 
