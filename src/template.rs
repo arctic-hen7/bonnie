@@ -84,7 +84,7 @@ pub fn edit() -> Result<(), String> {
     let result = match child {
         Ok(_) => Ok(()),
         Err(err) => Err(format!(
-            "Your editor failed to start with the following error: {}. I ran the command {}",
+            "The specified editor failed to start with the following error: '{}' when the command '{}' was run.",
             err, command
         )),
     };
