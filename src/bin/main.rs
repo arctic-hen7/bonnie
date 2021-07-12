@@ -58,7 +58,7 @@ fn core() -> Result<i32, String> {
                 },
             )?;
 
-            println!("    Done!");
+            println!("A new Bonnie configuration file has been initialized at [PATH]!");
 
             return Ok(0);
         } else if prog_args[0] == "-h" || prog_args[0] == "--help" {
@@ -87,7 +87,7 @@ fn core() -> Result<i32, String> {
                 let editor = PathBuf::from(env::var("EDITOR").unwrap_or("nano".to_string()));
 
                 let safe_editor = editor.to_str().ok_or(
-                    "Failed to parse the value within the `EDITOR` environment variable as a path/",
+                    "The value given in the 'EDITOR' environment variable couldn't be parsed as a valid path.",
                 )?;
 
                 child = OsCommand::new(safe_editor)
