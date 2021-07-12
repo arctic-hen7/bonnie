@@ -17,7 +17,7 @@ This just summarizes the functionality of this command, not the syntax of Bonnie
 
 The expected location of a Bonnie configuration file can be changed from the default `./bonnie.toml` by setting the `BONNIE_CONF` environment variable.
 The expected location of a Bonnie cache file can be changed from the default `./.bonnie.cache.json` by setting the `BONNIE_CACHE` environment variable.
-The default loocation of the Bonnie template file can be changed from `~/.bonnie/template.toml` by setting the `BONNIE_TEMPLATE` environment variable.
+The expected location of your default template can be changed from the default `~/.bonnie/template.toml` by setting the `BONNIE_TEMPLATE` environment variable.
 
 Further information can be found at https://github.com/arctic-hen7/bonnie/wiki.
         ",
