@@ -53,7 +53,7 @@ fn core() -> Result<i32, String> {
                 },
             )?;
 
-            println!("A new Bonnie configuration file has been initialized at [PATH]!");
+            println!("A new Bonnie configuration file has been initialized at ./bonnie.toml!");
 
             return Ok(0);
         } else if prog_args[0] == "-h" || prog_args[0] == "--help" {
