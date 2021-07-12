@@ -56,12 +56,16 @@ pub fn edit() -> Result<(), String> {
 
     let child;
 
+    let command;
+
     if cfg!(target_os = "windows") {
         // We need to spawn a `powershell` process to make `start` available.
         child = OsCommand::new("powershell")
             .arg(format!("start '{}'", template_path))
             .spawn()
             .map(|mut x| x.wait());
+
+        command = format!("powershell -command 'start {}'", template_path);
     } else {
         let editor = PathBuf::from(env::var("EDITOR").unwrap_or("nano".to_string()));
 
@@ -70,16 +74,18 @@ pub fn edit() -> Result<(), String> {
         )?;
 
         child = OsCommand::new(safe_editor)
-            .arg(template_path)
+            .arg(&template_path)
             .spawn()
             .map(|mut x| x.wait());
+
+        command = format!("{} {}", safe_editor, template_path);
     }
 
     let result = match child {
         Ok(_) => Ok(()),
         Err(err) => Err(format!(
-            "Your editor failed to start with the following error: {:#?}",
-            err
+            "Your editor failed to start with the following error: {}. I ran the command {}",
+            err, command
         )),
     };
 
