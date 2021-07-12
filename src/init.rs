@@ -1,10 +1,12 @@
+use crate::template;
 use crate::version::BONNIE_VERSION;
+
 use std::fs;
 
 // Creates a new Bonnie configuration file using a template, or from the default
 pub fn init(template: Option<String>) -> Result<(), String> {
     // Check if there's already a config file in this directory
-    if fs::metadata("./bonnie.toml").is_ok() {
+    if fs::metadata("bonnie.toml").is_ok() {
         Err(String::from("A Bonnie configuration file already exists in this directory. If you want to create a new one, please delete the old one first."))
     } else {
         // Check if a template has been given
@@ -22,19 +24,25 @@ pub fn init(template: Option<String>) -> Result<(), String> {
             // We have a template file that doesn't exist
             return Err(format!("The given template file at '{}' does not exist or can't be read. Please make sure the file exists and you have the permissions necessary to read from it.", template.as_ref().unwrap()));
         } else {
-            // Create a new `bonnie.toml` file using the default
-            // TODO read the default from `~/.bonnie/template.toml` if it exists
-            output = fs::write(
-                "./bonnie.toml",
-                format!(
-                    "version=\"{version}\"
+            // Try to get the default template file from `~/.bonnie/template.toml`
+            // If it's not available, we'll use a pre-programmed default
+            let template = match template::get_default() {
+                Ok(template) => Ok(template),
+                // Not ideal, but...
+                Err(err) if err == "The system cannot find the file specified. (os error 2)" => {
+                    Ok(format!(
+                        "version=\"{version}\"
 
 [scripts]
 start = \"echo \\\"No start script yet!\\\"\"
-                ",
-                    version = BONNIE_VERSION
-                ),
-            );
+",
+                        version = BONNIE_VERSION
+                    ))
+                }
+                Err(err) => Err(err),
+            }?;
+
+            output = fs::write("bonnie.toml", template)
         }
 
         match output {

@@ -1,4 +1,6 @@
-use lib::{cache, cache_exists, get_cfg, help, init, load_from_cache, Config, BONNIE_VERSION};
+use lib::{
+    cache, cache_exists, get_cfg, help, init, load_from_cache, template, Config, BONNIE_VERSION,
+};
 use std::env;
 use std::io::Write;
 
@@ -50,12 +52,17 @@ fn core() -> Result<i32, String> {
                     _ => None,
                 },
             )?;
+
+            println!("A new Bonnie configuration file has been initialized at ./bonnie.toml!");
+
             return Ok(0);
         } else if prog_args[0] == "-h" || prog_args[0] == "--help" {
             help(stdout);
             return Ok(0);
         } else if prog_args[0] == "-c" || prog_args[0] == "--cache" {
             should_cache = true;
+        } else if prog_args[0] == "-e" || prog_args[0] == "--edit-template" {
+            return template::edit().map(|_| 0);
         }
     }
     // Check if there's a cache we should read from

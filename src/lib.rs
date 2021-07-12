@@ -6,6 +6,7 @@ mod help;
 mod init;
 mod raw_schema;
 mod schema;
+pub mod template;
 mod version;
 
 pub use crate::cache::{cache, cache_exists, load_from_cache};
