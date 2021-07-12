@@ -31,13 +31,28 @@ pub fn get_default() -> Result<String, String> {
 }
 
 pub fn edit() -> Result<(), String> {
+    // This can take a little while with with `start` on Windows
+    println!("Opening template file...");
+
     let template_path: String = match get_template_path() {
-        Ok(path) => Ok(path.to_str().unwrap().to_string()),
+        Ok(path) => path
+            .to_str()
+            .map(String::from)
+            .ok_or(String::from("The path provided is not valid Unicode.")),
         Err(err) => Err(format!(
-            "Failed to get template path with the following error: {:#?}",
+            "Failed to get template path with the following error: {}",
             err
         )),
     }?;
+
+    let template_exists = fs::metadata(&template_path).is_ok();
+
+    if !template_exists {
+        return Err(format!(
+            "I could not find a template file to edit at {}.",
+            template_path
+        ));
+    }
 
     let child;
 
