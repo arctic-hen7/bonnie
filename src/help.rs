@@ -12,7 +12,7 @@ This just summarizes the functionality of this command, not the syntax of Bonnie
 -h, --help                                      prints this help page
 -v, --version                                   prints the current version of Bonnie
 -i, --init [-t, --template <template-file>]     creates a new `bonnie.toml` configuration, using the specified template file if provided.
--e, --edit-template                             opens your Bonnie init template file in your default editor
+-e, --edit-template                             opens the default template in your default cli editor
 -c, --cache                                     caches the Bonnie configuration file to `.bonnie.cache.json` for performance (this cache must be MANUALLY updated by re-running this command!)
 
 The expected location of a Bonnie configuration file can be changed from the default `./bonnie.toml` by setting the `BONNIE_CONF` environment variable.
