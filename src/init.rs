@@ -40,8 +40,7 @@ start = \"echo \\\"No start script yet!\\\"\"
                     ))
                 }
                 Err(err) => Err(err),
-            }
-            .map_err(|err| format!("{:#?}", err))?;
+            }?;
 
             output = fs::write("bonnie.toml", template)
         }
