@@ -8,9 +8,9 @@ use std::process::Command as OsCommand;
 pub fn get_template_path() -> Result<PathBuf, String> {
     let default_template_path = home_dir()
         .map(|path| path.join(".bonnie").join("template.toml"))
-        .ok_or(
-            String::from("Your home directory couldn't be found. Please check your system configuration.")
-        )?;
+        .ok_or(String::from(
+            "Your home directory couldn't be found. Please check your system configuration.",
+        ))?;
 
     Ok(env::var("BONNIE_TEMPLATE")
         .map(|value| PathBuf::from(value))
