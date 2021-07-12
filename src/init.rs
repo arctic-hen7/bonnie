@@ -47,7 +47,7 @@ start = \"echo \\\"No start script yet!\\\"\"
 
         match output {
     		Ok(_) => Ok(()),
-    		Err(_) => Err(format!("Error creating new bonnie.toml, make sure you have the permissions to write to this directory."))
+    		Err(_) => Err(String::from("Error creating new bonnie.toml, make sure you have the permissions to write to this directory."))
     	}
     }
 }
