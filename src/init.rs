@@ -2,7 +2,6 @@ use crate::template;
 use crate::version::BONNIE_VERSION;
 
 use std::fs;
-use std::io;
 
 // Creates a new Bonnie configuration file using a template, or from the default
 pub fn init(template: Option<String>) -> Result<(), String> {
@@ -28,7 +27,8 @@ pub fn init(template: Option<String>) -> Result<(), String> {
             // get t
             let template = match template::get_default() {
                 Ok(template) => Ok(template),
-                Err(template::Error::Other(err)) if err.kind() == io::ErrorKind::NotFound => {
+                // Not ideal, but...
+                Err(err) if err == "The system cannot find the file specified. (os error 2)" => {
                     Ok(format!(
                         "version=\"{version}\"
 
