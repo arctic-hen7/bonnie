@@ -43,8 +43,6 @@ fn core() -> Result<i32, String> {
             writeln!(stdout, "You are currently running Bonnie v{}! You can see the latest release at https://github.com/arctic-hen7/bonnie/releases.", BONNIE_VERSION).expect("Failed to write version.");
             return Ok(0);
         } else if prog_args[0] == "-i" || prog_args[0] == "--init" {
-            print!("Initialising...");
-
             init(
                 // See if a template was provided with the `--template`/`-t` flag
                 match prog_args.get(1).as_ref() {
