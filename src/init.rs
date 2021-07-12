@@ -25,7 +25,8 @@ pub fn init(template: Option<String>) -> Result<(), String> {
             // We have a template file that doesn't exist
             return Err(format!("The given template file at '{}' does not exist or can't be read. Please make sure the file exists and you have the permissions necessary to read from it.", template.as_ref().unwrap()));
         } else {
-            // get t
+            // Try to get the default template file from `~/.bonnie/template.toml`
+            // If it's not available, we'll use a pre-programmed default
             let template = match template::get_default() {
                 Ok(template) => Ok(template),
                 Err(template::Error::Other(err)) if err.kind() == io::ErrorKind::NotFound => {
