@@ -1,11 +1,8 @@
 use lib::{
-    cache, cache_exists, get_cfg, get_template_path, help, init, load_from_cache, Config,
-    BONNIE_VERSION,
+    cache, cache_exists, get_cfg, help, init, load_from_cache, template, Config, BONNIE_VERSION,
 };
 use std::env;
 use std::io::Write;
-use std::path::PathBuf;
-use std::process::Command as OsCommand;
 
 // All this does is run the program and terminate with the acquired exit code
 fn main() {
@@ -67,47 +64,7 @@ fn core() -> Result<i32, String> {
         } else if prog_args[0] == "-c" || prog_args[0] == "--cache" {
             should_cache = true;
         } else if prog_args[0] == "-e" || prog_args[0] == "--edit-template" {
-            let template_path: String = match get_template_path() {
-                Ok(path) => Ok(path.to_str().unwrap().to_string()),
-                Err(err) => Err(format!(
-                    "Failed to get template path with the following error: {:#?}",
-                    err
-                )),
-            }?;
-
-            let child;
-
-            if cfg!(target_os = "windows") {
-                // We need to spawn a `powershell` process to make `start` available.
-                child = OsCommand::new("powershell")
-                    .arg(format!("start '{}'", template_path))
-                    .spawn()
-                    .map(|mut x| x.wait());
-            } else {
-                let editor = PathBuf::from(env::var("EDITOR").unwrap_or("nano".to_string()));
-
-                let safe_editor = editor.to_str().ok_or(
-                    "The value given in the 'EDITOR' environment variable couldn't be parsed as a valid path.",
-                )?;
-
-                child = OsCommand::new(safe_editor)
-                    .arg(template_path)
-                    .spawn()
-                    .map(|mut x| x.wait());
-            }
-
-            let result = match child {
-                Ok(_) => {
-                    println!("Opening template file...");
-                    Ok(0)
-                }
-                Err(err) => Err(format!(
-                    "Your editor failed to start with the following error: {:#?}",
-                    err
-                )),
-            };
-
-            return result;
+            return template::edit().map(|_| 0);
         }
     }
     // Check if there's a cache we should read from

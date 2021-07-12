@@ -6,7 +6,7 @@ mod help;
 mod init;
 mod raw_schema;
 mod schema;
-mod template;
+pub mod template;
 mod version;
 
 pub use crate::cache::{cache, cache_exists, load_from_cache};
@@ -15,5 +15,4 @@ pub use crate::help::help;
 pub use crate::init::init;
 pub use crate::raw_schema::Config;
 pub use crate::schema::Config as FinalConfig;
-pub use crate::template::get_template_path;
 pub use crate::version::BONNIE_VERSION;
