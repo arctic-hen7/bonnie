@@ -3,86 +3,54 @@ use home::home_dir;
 use std::env;
 use std::fs;
 use std::path::PathBuf;
-use std::process::Command as OsCommand;
+use crate::BONNIE_VERSION;
 
-pub fn get_template_path() -> Result<PathBuf, String> {
-    let default_template_path = home_dir()
-        .map(|path| path.join(".bonnie").join("template.toml"))
-        .ok_or(String::from(
-            "Your home directory couldn't be found. Please check your system configuration.",
-        ))?;
+// Gets the pre-programmed default template
+fn get_inbuilt_default_template() -> String {
+    format!(
+        "version=\"{version}\"
 
-    Ok(env::var("BONNIE_TEMPLATE")
-        .map(|value| PathBuf::from(value))
-        .unwrap_or(default_template_path))
+[scripts]
+start = \"echo \\\"No start script yet!\\\"\"",
+        version = BONNIE_VERSION
+    )
 }
 
-pub fn get_default() -> Result<String, String> {
-    let path = get_template_path()?;
-
-    let template = fs::read_to_string(path);
-
-    template.map_err(|err| err.to_string())
-}
-
-pub fn edit() -> Result<(), String> {
-    // This can take a little while with with `start` on Windows
-    println!("Opening template file...");
-
-    let template_path: String = match get_template_path() {
-        Ok(path) => path
-            .to_str()
-            .map(String::from)
-            .ok_or(String::from("The path provided is not valid Unicode.")),
-        Err(err) => Err(format!(
-            "Failed to get template path with the following error: {}",
-            err
-        )),
-    }?;
-
-    let template_exists = fs::metadata(&template_path).is_ok();
-
-    if !template_exists {
-        return Err(format!(
-            "I could not find a template file to edit at {}.",
-            template_path
-        ));
+// Gets the path of a default template
+// This will return `Ok(None)` if no default template is available
+fn get_template_path() -> Option<PathBuf> {
+    match env::var("BONNIE_TEMPLATE") {
+        // We'll use the given template file path if provided
+        Ok(path) => Some(PathBuf::from(path)),
+        // If that variable isn't set properly or at all, we'll try the user's global template file
+        // This will return `Ok(None)` if the home template couldn't be found
+        Err(_) => {
+            // This will return `None` if the user's home directory isn't found, we make it also do so if the global template isn't found
+            home_dir()
+                .map(|path| path.join(".bonnie").join("template.toml"))
+                .map(|path| {
+                    if path.exists() {
+                        Some(path)
+                    } else {
+                        None
+                    }
+                })
+                .flatten()
+        }
     }
+}
 
-    let child;
-
-    let command;
-
-    if cfg!(target_os = "windows") {
-        // We need to spawn a `powershell` process to make `start` available.
-        child = OsCommand::new("powershell")
-            .arg(format!("start '{}'", template_path))
-            .spawn()
-            .map(|mut x| x.wait());
-
-        command = format!("powershell -command 'start {}'", template_path);
+// Gets the default template, from `BONNIE_TEMPLATE`, the global file, or the pre-programmed default
+pub fn get_default_template() -> Result<String, String> {
+    let path = get_template_path();
+    if let Some(path) = path {
+        let template = fs::read_to_string(path);
+        match template {
+            Ok(template) => Ok(template),
+            Err(err) => Err(format!("Failed to get default template file. Please make sure any path in 'BONNIE_TEMPLATE' definitely exists. Error was '{}'.", err))
+        }
     } else {
-        let editor = PathBuf::from(env::var("EDITOR").unwrap_or("nano".to_string()));
-
-        let safe_editor = editor.to_str().ok_or(
-            "The value given in the 'EDITOR' environment variable couldn't be parsed as a valid path.",
-        )?;
-
-        child = OsCommand::new(safe_editor)
-            .arg(&template_path)
-            .spawn()
-            .map(|mut x| x.wait());
-
-        command = format!("{} {}", safe_editor, template_path);
+        // If no template files exist, use the pre-programmed default instead
+        Ok(get_inbuilt_default_template())
     }
-
-    let result = match child {
-        Ok(_) => Ok(()),
-        Err(err) => Err(format!(
-            "The specified editor failed to start with the following error: '{}' when the command '{}' was run.",
-            err, command
-        )),
-    };
-
-    return result;
 }

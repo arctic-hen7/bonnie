@@ -1,5 +1,5 @@
 use lib::{
-    cache, cache_exists, get_cfg, help, init, load_from_cache, template, Config, BONNIE_VERSION,
+    cache, cache_exists, get_cfg, help, init, load_from_cache, Config, BONNIE_VERSION,
 };
 use std::env;
 use std::io::Write;
@@ -47,7 +47,7 @@ fn core() -> Result<i32, String> {
                 // See if a template was provided with the `--template`/`-t` flag
                 match prog_args.get(1).as_ref() {
                     Some(arg) if &**arg == "-t" || &**arg == "--template" => {
-                        prog_args.get(2).map(|x| x.to_string())
+                        prog_args.get(2).map(|s| s.to_string())
                     }
                     _ => None,
                 },
@@ -61,8 +61,6 @@ fn core() -> Result<i32, String> {
             return Ok(0);
         } else if prog_args[0] == "-c" || prog_args[0] == "--cache" {
             should_cache = true;
-        } else if prog_args[0] == "-e" || prog_args[0] == "--edit-template" {
-            return template::edit().map(|_| 0);
         }
     }
     // Check if there's a cache we should read from

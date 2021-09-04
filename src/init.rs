@@ -1,12 +1,11 @@
-use crate::template;
-use crate::version::BONNIE_VERSION;
+use crate::template::get_default_template;
 
 use std::fs;
 
 // Creates a new Bonnie configuration file using a template, or from the default
 pub fn init(template: Option<String>) -> Result<(), String> {
     // Check if there's already a config file in this directory
-    if fs::metadata("bonnie.toml").is_ok() {
+    if fs::metadata("./bonnie.toml").is_ok() {
         Err(String::from("A Bonnie configuration file already exists in this directory. If you want to create a new one, please delete the old one first."))
     } else {
         // Check if a template has been given
@@ -26,23 +25,8 @@ pub fn init(template: Option<String>) -> Result<(), String> {
         } else {
             // Try to get the default template file from `~/.bonnie/template.toml`
             // If it's not available, we'll use a pre-programmed default
-            let template = match template::get_default() {
-                Ok(template) => Ok(template),
-                // Not ideal, but...
-                Err(err) if err == "The system cannot find the file specified. (os error 2)" => {
-                    Ok(format!(
-                        "version=\"{version}\"
-
-[scripts]
-start = \"echo \\\"No start script yet!\\\"\"
-",
-                        version = BONNIE_VERSION
-                    ))
-                }
-                Err(err) => Err(err),
-            }?;
-
-            output = fs::write("bonnie.toml", template)
+            let template = get_default_template()?;
+            output = fs::write("./bonnie.toml", template);
         }
 
         match output {
