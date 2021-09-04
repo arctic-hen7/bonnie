@@ -67,7 +67,7 @@ impl Config {
                     // We remove the first argument, which is the name of this, the parent command
                     let mut args_without_this = args.to_vec();
                     args_without_this.remove(0);
-                    get_command_for_scripts_and_args(&subcommands, &args_without_this, false)?
+                    get_command_for_scripts_and_args(subcommands, &args_without_this, false)?
                     // It's no longer the first time obviously
                 }
                 // They're ordered and so individually uninvocable, this is the command we want
@@ -131,7 +131,7 @@ impl Command {
         prog_args: &[String],
         default_shell: &DefaultShell,
     ) -> Result<Bone, String> {
-        let bone = self.prepare_internal(name, prog_args, &default_shell, None)?;
+        let bone = self.prepare_internal(name, prog_args, default_shell, None)?;
 
         Ok(bone)
     }
@@ -159,11 +159,11 @@ impl Command {
             // Interpolate for each individual command
             // We have to do this in a for loop for `?`
             let mut cmd_strs: Vec<String> = Vec::new();
-            let (cmds, shell) = command_wrapper.get_commands_and_shell(&default_shell);
+            let (cmds, shell) = command_wrapper.get_commands_and_shell(default_shell);
             for cmd_str in cmds {
                 let with_env_vars = Command::interpolate_env_vars(&cmd_str, &self.env_vars)?;
                 let (with_args, remaining_args) =
-                    Command::interpolate_specific_args(&with_env_vars, name, &args, prog_args)?;
+                    Command::interpolate_specific_args(&with_env_vars, name, args, prog_args)?;
                 let ready_cmd =
                     Command::interpolate_remaining_arguments(&with_args, &remaining_args);
                 cmd_strs.push(ready_cmd);
@@ -201,8 +201,8 @@ impl Command {
                 let cmd = subcommand.prepare_internal(
                     subcommand_name,
                     prog_args,
-                    &default_shell,
-                    Some(&args),
+                    default_shell,
+                    Some(args),
                 )?;
                 cmds.insert(subcommand_name.to_string(), cmd);
             }
@@ -246,7 +246,7 @@ impl Command {
             // All arguments are shown in the command string as `%name` or the like, so we get that whole string
             let given_value = &prog_args[idx];
             let arg_with_sign = "%".to_string() + arg;
-            let new_command = with_args.replace(&arg_with_sign, &given_value);
+            let new_command = with_args.replace(&arg_with_sign, given_value);
             // We don't check if we changed something because that doesn't work for multistage or ordered subcommands
             with_args = new_command;
         }

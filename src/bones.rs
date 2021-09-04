@@ -108,7 +108,7 @@ impl RawBonesDirective {
         // Parse the conditions `HashMap`
         let mut parsed_conditions: HashMap<BonesOperator, Option<BonesDirective>> = HashMap::new();
         for (raw_operator, raw_directive) in &self.1 {
-            let operator = BonesOperator::parse_str(&raw_operator)?;
+            let operator = BonesOperator::parse_str(raw_operator)?;
             // Parse the directive recursively
             // We need to use a full `match` statement for `?`
             let directive = match raw_directive {

@@ -172,7 +172,7 @@ impl Config {
                         subcommands: match subcommands {
                             // We can't use `.map()` for this because we need support for `?`
                             Some(subcommands) => Some(
-                                parse_scripts(&subcommands, matches!(order, Some(_)))?
+                                parse_scripts(subcommands, matches!(order, Some(_)))?
                             ),
                             None => None
                         },
