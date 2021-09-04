@@ -36,6 +36,8 @@ fn core() -> Result<i32, String> {
     // This will panic if the first argument is not found (which is probably someone trying to fuzz us)
     // TODO add a checker for the executable that offers to install Bonnie if it isn't already?
     let _executable_name = prog_args.remove(0);
+    // Get the file we'll be using
+    let cfg_path = env::var("BONNIE_CONF").unwrap_or_else(|_| "./bonnie.toml".to_string());
     // Check for special arguments
     let mut should_cache = false;
     if matches!(prog_args.get(0), Some(_)) {
@@ -51,9 +53,10 @@ fn core() -> Result<i32, String> {
                     }
                     _ => None,
                 },
+                &cfg_path
             )?;
 
-            println!("A new Bonnie configuration file has been initialized at ./bonnie.toml!");
+            println!("A new Bonnie configuration file has been initialized at {}!", &cfg_path);
 
             return Ok(0);
         } else if prog_args[0] == "-h" || prog_args[0] == "--help" {
