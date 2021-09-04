@@ -94,6 +94,78 @@ impl Config {
 
         Ok(data)
     }
+    // Provides a documentation message for this configuration
+    // If a single command name is given, only it will be documented
+    pub fn document(&self, cmd_to_doc: Option<String>) -> Result<String, String> {
+        // Handle metadata about the whole file first with a preamble
+        let mut meta = format!(
+            "This is the help page for a configuration file. If you'd like help about Bonnie generally, run `bonnie -h` instead.
+Version: {}",
+            self.version,
+        );
+        // Environment variable files
+        let mut env_files = Vec::new();
+        for env_file in &self.env_files {
+            env_files.push(format!("    {}", env_file));
+        }
+        if !env_files.is_empty() {
+            meta += &format!(
+                "\nEnvironment variable files:\n{}",
+                env_files.join("\n")
+            );
+        }
+
+        let msg;
+        if let Some(cmd_name) = cmd_to_doc {
+            let cmd = self.scripts.get(&cmd_name);
+            let cmd = match cmd {
+                Some(cmd) => cmd,
+                None => return Err(format!("Command '{}' not found. You can see all supported commands by running `bonnie help`.", cmd_name))
+            };
+            msg = cmd.document(&cmd_name);
+        } else {
+            // Loop through every command and document it
+            let mut msgs = Vec::new();
+            // Sort the subcommands alphabetically
+            let mut cmds: Vec<(&String, &Command)> = self.scripts.iter().collect();
+            cmds.sort_by(|(name, _), (name2, _)| name.cmp(name2));
+            for (cmd_name, cmd) in cmds {
+                msgs.push(
+                    cmd.document(cmd_name)
+                );
+            }
+
+            msg = msgs.join("\n");
+        }
+        // Space everything out evenly based on the longest command name (thing on the left)
+        // First, we get the longest command name (thing on the left of where tabs will end up)
+        // We loop through each line because otherwise subcommands stuff things up
+        let mut longest_left: usize = 0;
+        for line in msg.lines() {
+            // Get the length of the stuff to the left of the tabs placeholder
+            let left_len = line.split("{TABS}")
+                .collect::<Vec<&str>>()[0]
+                .len();
+            if left_len > longest_left {
+                longest_left = left_len;
+            }
+        }
+        // Now we loop back through each line and add the appropriate amount of space
+        let mut spaced_msg_lines = Vec::new();
+        for line in msg.lines() {
+            let left_len = line.split("{TABS}")
+                .collect::<Vec<&str>>()[0]
+                .len();
+            // We want the longest line to have 4 spaces, then the rest should have (longest - length + 4) spaces
+            let spaces = " ".repeat(longest_left - left_len + 4);
+            spaced_msg_lines.push(
+                line.replace("{TABS}", &spaces)
+            );
+        }
+        let spaced_msg = spaced_msg_lines.join("\n");
+
+        Ok(format!("{}\n\n{}", meta, spaced_msg))
+    }
 }
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct DefaultShell {
@@ -118,6 +190,7 @@ pub struct Command {
     pub subcommands: Option<Scripts>, // Subcommands are fully-fledged commands (mostly)
     pub order: Option<BonesDirective>, // If this is specified, subcomands must not specify the `args` property, it may be specified at the top-level of this script as a sibling of `order`
     pub cmd: Option<CommandWrapper>,   // If subcommands are provided, a root command is optional
+    pub description: Option<String>, // This will be rendered in the config's help page
 }
 impl Command {
     // Prepares a command by interpolating everything and resolving shell/tagret logic
@@ -306,8 +379,55 @@ impl Command {
 
         interpolated
     }
-}
+    // Gets a documentation message for this command based on its metadata and the `desc` properties
+    fn document(&self, name: &str) -> String {
+        let mut msgs = Vec::new();
+        // Get the user-given docs (if they exist)
+        let doc = match &self.description {
+            Some(desc) => desc.to_string(),
+            None => String::from("no 'desc' property set")
+        };
 
+        // Set up the left side (command name and some arguments info)
+        let mut left = String::new();
+        // Environment variables (before the command name)
+        for env_var in &self.env_vars {
+            left += &format!("<{}> ", env_var);
+        }
+        // Command name
+        left += name;
+        // Arguments (after the command name)
+        for arg in &self.args {
+            left += &format!(" <{}>", arg);
+        }
+        // Ordered or not
+        if self.order.is_some() {
+            left += " (ordered)";
+        }
+        // TODO handle '%%' as `[...]`
+        // That's a placeholder for a number of tabs that spaces everything evenly
+        msgs.push(format!("{}{{TABS}}{}", left, doc));
+
+        // Loop through every subcommand and document it
+        if let Some(subcommands_map) = &self.subcommands {
+            // Sort the subcommands alphabetically
+            let mut subcommands_iter: Vec<(&String, &Command)> = subcommands_map.iter().collect();
+            subcommands_iter.sort_by(|(name, _), (name2, _)| name.cmp(name2));
+            for (cmd_name, cmd) in subcommands_iter {
+                let subcmd_doc = cmd.document(cmd_name);
+                msgs.push(
+                    // We add four spaces in front of every line (that way it works recursively for nested subcommands)
+                    format!(
+                        "    {}",
+                        subcmd_doc.replace("\n", "\n    ")
+                    )
+                );
+            }
+        }
+
+        msgs.join("\n")
+    }
+}
 // This defines how the command runs on different targets
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct CommandWrapper {

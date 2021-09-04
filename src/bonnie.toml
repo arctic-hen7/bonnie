@@ -10,8 +10,11 @@ default_shell.targets.windows = { parts = ["cmd", "/C", "{COMMAND}"], delimiter 
 [scripts]
 # The most basic possible syntax
 basic = "echo Test"
-# This command will have all given arguments inteprolated into it
+# This command will have all given arguments interpolated into it
 echo = "echo \"Message is: '%%'.\""
+# This command is explicitly documented
+documented.cmd = "echo \"I'm documented!\""
+documented.desc = "here's some documentation"
 # This command has required specific arguments and then interpolates everything after that at `%%`
 append_with_args.cmd = "echo \"Hi %name! Message is: '%%'.\""
 append_with_args.args = ["name"]
@@ -55,7 +58,8 @@ subcommands.subcommands.multistage_with_interpolation.cmd = [
 ]
 subcommands.subcommands.multistage_with_interpolation.args = ["name"]
 subcommands.subcommands.multistage_with_interpolation.env_vars = ["GREETING"]
-subcommands.subcommands.nested.subcommands.basic = "echo Nested"
+subcommands.subcommands.nested.subcommands.basic.cmd = "echo Nested"
+subcommands.subcommands.nested.subcommands.basic.desc = "here's a deeply nested description"
 subcommands.subcommands.nested.order = "basic" # As long as this is given, no problems arise
 # This command has a series of subcommands that will be executed in a certain order
 # With this type, subcommands can't take arguments, all arguments must be provided up-front for the execution

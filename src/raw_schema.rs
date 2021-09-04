@@ -145,14 +145,16 @@ impl Config {
                         env_vars: Vec::new(),
                         subcommands: None,
                         order: None,
-                        cmd: Some(raw_command_wrapper.parse()) // In the simple form, a command must be given (no subcommands can be specified)
+                        cmd: Some(raw_command_wrapper.parse()), // In the simple form, a command must be given (no subcommands can be specified)
+                        description: None
                     },
                     Command::Complex {
                         args,
                         env_vars,
                         subcommands,
                         order,
-                        cmd
+                        cmd,
+                        desc
                     } => schema::Command {
                         // If `order` is defined at the level above, we can't interpolate environment variables from here (has to be done at the level `order` was specified)
                         args: match is_order_defined {
@@ -200,7 +202,8 @@ impl Config {
                             Some(cmd) => Some(cmd.parse()),
                             // It's mandatory and not given
                             None => return Err(format!("Error in parsing Bonnie configuration file: if `subcommands` is not specified, `cmd` is mandatory. This error occurred in in the '{}' script/subscript.", script_name))
-                        }
+                        },
+                        description: desc.clone()
                     },
                 };
                 scripts.insert(script_name.to_string(), command);
@@ -270,9 +273,10 @@ enum Command {
     Complex {
         args: Option<Vec<String>>,
         env_vars: Option<Vec<String>>,
-        subcommands: Option<Scripts>, // Subcommands are fully-fledged  commands (mostly)
-        order: Option<OrderString>, // If this is specified,subcomands must not specify the `args` property, it may be specified at the top-level of this script as a sibling of `order`
+        subcommands: Option<Scripts>, // Subcommands are fully-fledged commands (mostly)
+        order: Option<OrderString>, // If this is specified, subcomands must not specify the `args` property, it may be specified at the top-level of this script as a sibling of `order`
         cmd: Option<CommandWrapper>, // This is optional if subcommands are specified
+        desc: Option<String>, // This will be rendered in the config's help page ('description' is overly verbose)
     },
 }
 type OrderString = String; // A string of as yet undefined syntax that defines the progression between subcommands

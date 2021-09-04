@@ -41,6 +41,7 @@ fn core() -> Result<i32, String> {
     // Check for special arguments
     let mut should_cache = false;
     let mut verbose = false;
+    let mut document = false;
     if matches!(prog_args.get(0), Some(_)) {
         if prog_args[0] == "-v" || prog_args[0] == "--version" {
             writeln!(stdout, "You are currently running Bonnie v{}! You can see the latest release at https://github.com/arctic-hen7/bonnie/releases.", BONNIE_VERSION).expect("Failed to write version.");
@@ -69,6 +70,12 @@ fn core() -> Result<i32, String> {
             // This can be specified with a command following
             verbose = true;
             prog_args.remove(0);
+
+        }
+        // Check if the user wants the configuration's help page (self-documenting)
+        // TODO 'doc' instead/as well?
+        else if prog_args[0] == "help" {
+            document = true;
         }
     }
     // Check if there's a cache we should read from
@@ -87,6 +94,13 @@ fn core() -> Result<i32, String> {
     // Check if we're caching
     if should_cache {
         cache(&cfg, stdout, None)?;
+        return Ok(0);
+    }
+
+    if document {
+        // Handle individual commands
+        let msg = cfg.document(prog_args.get(1).cloned())?;
+        writeln!(stdout, "{}", msg);
         return Ok(0);
     }
 
