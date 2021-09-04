@@ -15,17 +15,17 @@ pub enum Bone {
 impl Bone {
     // Executes this command, returning its exit code
     // This takes an optional buffer to write data about the command being executed in testing
-    pub fn run(&self, name: &str, output: &mut impl std::io::Write) -> Result<i32, String> {
+    pub fn run(&self, name: &str, verbose: bool, output: &mut impl std::io::Write) -> Result<i32, String> {
         match self {
             Bone::Simple(core) => {
                 // Execute the command core
-                let exit_code = core.execute(name, output)?;
+                let exit_code = core.execute(name, verbose, output)?;
                 // Return the exit code of the command sequence
                 Ok(exit_code)
             }
             Bone::Complex(command) => {
                 // If it's complex and thus recursive, we depend on the Bones language parser
-                command.run(output)
+                command.run(verbose, output)
             }
         }
     }
@@ -50,11 +50,12 @@ impl BonesCommand {
     }
     // Runs a Bones command by evaluating the directive itself and calling commands in sequence recursively
     // Currently, the logic of the Bones language lives here
-    fn run(&self, output: &mut impl std::io::Write) -> Result<i32, String> {
+    fn run(&self, verbose: bool, output: &mut impl std::io::Write) -> Result<i32, String> {
         // This system is highly recursive, so everything is done in this function for progressively less complex directives
         fn run_for_directive(
             directive: &BonesDirective,
             cmds: &HashMap<String, Bone>,
+            verbose: bool,
             output: &mut impl std::io::Write,
         ) -> Result<i32, String> {
             // Get the token, which names the command we'll be running
@@ -67,7 +68,7 @@ impl BonesCommand {
             };
             // Now execute it and get the exit code (this may recursively call this function if ordered subcommands are nested, but that dcoesn't matter)
             // Bonnie treats all command cores as futures for an exit code, we don't care about any side effects (printing, server execution, etc.)
-            let exit_code = bone.run(command_name, output)?;
+            let exit_code = bone.run(command_name, verbose, output)?;
             // Iterate over the conditions given and check if any of them match that exit code
             // We'll run the first one that does (even if more do after that)
             // TODO document the above behaviour
@@ -77,7 +78,7 @@ impl BonesCommand {
                     // An operator has matched, check if it has an associated directive
                     final_exit_code = match directive {
                         // If it does, run that and get its exit code
-                        Some(directive) => run_for_directive(directive, cmds, output)?,
+                        Some(directive) => run_for_directive(directive, cmds, verbose, output)?,
                         // If not, return the exit code we just got above
                         None => exit_code,
                     };
@@ -90,7 +91,7 @@ impl BonesCommand {
 
         // Begin the recursion on this top-level directive
         // This will eventually return the exit code from the lowest level of recursion, which we return
-        let exit_code = run_for_directive(&self.directive, &self.cmds, output)?;
+        let exit_code = run_for_directive(&self.directive, &self.cmds, verbose, output)?;
         Ok(exit_code)
     }
 }
@@ -247,7 +248,7 @@ pub struct BonesCore {
     pub shell: Vec<String>, // Vector of executable and arguments thereto
 }
 impl BonesCore {
-    fn execute(&self, name: &str, output: &mut impl std::io::Write) -> Result<i32, String> {
+    fn execute(&self, name: &str, verbose: bool, output: &mut impl std::io::Write) -> Result<i32, String> {
         // Get the executable from the shell (the first element)
         let executable = self.shell.get(0);
         let executable = match executable {
@@ -268,10 +269,13 @@ impl BonesCore {
             // If there are no arguments, we really don't care, shells can be as weird as they want
             None => Vec::new(),
         };
-        // If we're in debug, write details about the command to the given output
-        // TODO only do this in testing
+        // If we're in debug, write details about the command to the given output (technical)
         if cfg!(debug_assertions) {
-            writeln!(output, "{}, {:?}", executable, args).expect("Failed to write warning.");
+            writeln!(output, "{}, {:?}", executable, args).expect("Failed to write technical information.");
+        }
+        // If the user wants it, write the actual command we'll run to the given output
+        if verbose {
+            writeln!(output, "Running command '{}' with arguments '{:?}'.", executable, args).expect("Failed to write verbose information.");
         }
         // Prepare the child process
         let child = OsCommand::new(&executable).args(args).spawn();

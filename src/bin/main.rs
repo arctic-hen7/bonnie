@@ -40,6 +40,7 @@ fn core() -> Result<i32, String> {
     let cfg_path = env::var("BONNIE_CONF").unwrap_or_else(|_| "./bonnie.toml".to_string());
     // Check for special arguments
     let mut should_cache = false;
+    let mut verbose = false;
     if matches!(prog_args.get(0), Some(_)) {
         if prog_args[0] == "-v" || prog_args[0] == "--version" {
             writeln!(stdout, "You are currently running Bonnie v{}! You can see the latest release at https://github.com/arctic-hen7/bonnie/releases.", BONNIE_VERSION).expect("Failed to write version.");
@@ -64,6 +65,10 @@ fn core() -> Result<i32, String> {
             return Ok(0);
         } else if prog_args[0] == "-c" || prog_args[0] == "--cache" {
             should_cache = true;
+        } else if prog_args[0] == "-d" || prog_args[0] == "--debug" {
+            // This can be specified with a command following
+            verbose = true;
+            prog_args.remove(0);
         }
     }
     // Check if there's a cache we should read from
@@ -91,7 +96,7 @@ fn core() -> Result<i32, String> {
     let bone = command_to_run.prepare(&command_name, &relevant_args, &cfg.default_shell)?;
     // Execute the Bone, getting its final exit code
     // We parse in `stdout` as the place to write command information, but that will only be done in testing
-    let exit_code = bone.run(&command_name, stdout)?;
+    let exit_code = bone.run(&command_name, verbose, stdout)?;
 
     Ok(exit_code)
 }

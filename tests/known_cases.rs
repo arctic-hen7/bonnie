@@ -21,7 +21,8 @@ fn run_e2e_test(
     let cfg = Config::new(cfg_str)?.to_final(version, output)?;
     let (command_to_run, command_name, relevant_args) = cfg.get_command_for_args(&prog_args)?;
     let bone = command_to_run.prepare(&command_name, &relevant_args, &cfg.default_shell)?;
-    let exit_code = bone.run(&command_name, output)?;
+    // We don't want it verbose, it'll be so anyway in development
+    let exit_code = bone.run(&command_name, false, output)?;
 
     Ok(exit_code)
 }
