@@ -3,6 +3,11 @@ name = "bonnie"
 version = "0.3.2"
 authors = ["arctic_hen7 <arctic_hen7@pm.me>"]
 edition = "2018"
+description = "Simple, cross-platform, and fast command aliases with superpowers."
+license = "MIT"
+repository = "https://github.com/arctic-hen7/bonnie"
+keywords = ["cli", "automation"]
+categories = ["command-line-utilities"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
