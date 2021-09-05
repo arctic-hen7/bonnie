@@ -1,7 +1,7 @@
 // This file defines the current version of Bonnie
 // This MUST be updated before all releases!
 
-pub const BONNIE_VERSION: &str = "0.3.1";
+pub const BONNIE_VERSION: &str = "0.3.2";
 
 // The different between two major/minor/patch versions
 #[derive(Debug, PartialEq, Eq)]

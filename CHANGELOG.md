@@ -2,6 +2,31 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.3.2](https://github.com/arctic-hen7/bonnie/compare/v0.3.1...v0.3.2) (2021-09-05)
+
+
+### Features
+
+* ✨ added debug mode ([8891815](https://github.com/arctic-hen7/bonnie/commit/8891815313cd1a693e2ffecd2f63677528a598c8)), closes [#24](https://github.com/arctic-hen7/bonnie/issues/24)
+* ✨ added self-documenting ability ([00417fd](https://github.com/arctic-hen7/bonnie/commit/00417fd782310bf86e40a6759a4d712bce88294c))
+* **init:** ✨ allowed creating new config at custom path ([a81345b](https://github.com/arctic-hen7/bonnie/commit/a81345b43e569edb9d7c58eb5aef442221ef63c0))
+* ✨ added support for default template ([#21](https://github.com/arctic-hen7/bonnie/issues/21)) ([7c3eec6](https://github.com/arctic-hen7/bonnie/commit/7c3eec6f3ae981bb64ea866bf7ebda2d29e7c956))
+
+
+### Bug Fixes
+
+* 🐛 fixed a few things from [#21](https://github.com/arctic-hen7/bonnie/issues/21) and cleaned up code ([dd4e273](https://github.com/arctic-hen7/bonnie/commit/dd4e2739fc892413b835d83bc786a36b2cce3562))
+
+
+### Code Refactorings
+
+* ♻️ removed unnecessary borrows ([f12c60e](https://github.com/arctic-hen7/bonnie/commit/f12c60e9ff85c5cad5d2144bb8ab3d7f10ececac))
+
+
+### Documentation Changes
+
+* **wiki:** 📝 updated wiki ([c4bd3cb](https://github.com/arctic-hen7/bonnie/commit/c4bd3cb2d873cef4fe1d0f6740eda49f8a820dab))
+
 ### [0.3.1](https://github.com/arctic-hen7/bonnie/compare/v0.3.0...v0.3.1) (2021-07-09)
 
 
