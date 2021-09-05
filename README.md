@@ -54,7 +54,9 @@ By contrast, Bonnie uses TOML, which is designed specifically to be highly reada
 
 ## Installation
 
-You can install Bonnie easily from the [releases][releases] page for Windows, MacOS, Linux, and musl. If you need Bonnie for another system, you can clone this repository and build the project using Cargo as needed. If you think we should support a particular OS in the default releases, please [open an issue][newissue] and let us know!
+If you have `cargo` (Rust's package manager), you can install Bonnie easily by running `cargo install bonnie`.
+
+Otheriwse, you can install from the [releases][releases] page for Windows, MacOS, Linux, and musl. If you need Bonnie for another system, you can clone this repository and build the project using Cargo as needed. If you think we should support a particular OS in the default releases, please [open an issue][newissue] and let us know!
 
 After you've downloaded or built the binary, move it to a location where it's easily executable (e.g. `/usr/local/bin` on Linux). You'll also need to make it executable (`chmod +x ./[BINARY_NAME]` on Linux). Then, you should be able to run Bonnie from the terminal with `bonnie`!
 
