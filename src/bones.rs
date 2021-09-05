@@ -15,7 +15,12 @@ pub enum Bone {
 impl Bone {
     // Executes this command, returning its exit code
     // This takes an optional buffer to write data about the command being executed in testing
-    pub fn run(&self, name: &str, verbose: bool, output: &mut impl std::io::Write) -> Result<i32, String> {
+    pub fn run(
+        &self,
+        name: &str,
+        verbose: bool,
+        output: &mut impl std::io::Write,
+    ) -> Result<i32, String> {
         match self {
             Bone::Simple(core) => {
                 // Execute the command core
@@ -248,7 +253,12 @@ pub struct BonesCore {
     pub shell: Vec<String>, // Vector of executable and arguments thereto
 }
 impl BonesCore {
-    fn execute(&self, name: &str, verbose: bool, output: &mut impl std::io::Write) -> Result<i32, String> {
+    fn execute(
+        &self,
+        name: &str,
+        verbose: bool,
+        output: &mut impl std::io::Write,
+    ) -> Result<i32, String> {
         // Get the executable from the shell (the first element)
         let executable = self.shell.get(0);
         let executable = match executable {
@@ -271,11 +281,17 @@ impl BonesCore {
         };
         // If we're in debug, write details about the command to the given output (technical)
         if cfg!(debug_assertions) {
-            writeln!(output, "{}, {:?}", executable, args).expect("Failed to write technical information.");
+            writeln!(output, "{}, {:?}", executable, args)
+                .expect("Failed to write technical information.");
         }
         // If the user wants it, write the actual command we'll run to the given output
         if verbose {
-            writeln!(output, "Running command '{}' with arguments '{:?}'.", executable, args).expect("Failed to write verbose information.");
+            writeln!(
+                output,
+                "Running command '{}' with arguments '{:?}'.",
+                executable, args
+            )
+            .expect("Failed to write verbose information.");
         }
         // Prepare the child process
         let child = OsCommand::new(&executable).args(args).spawn();

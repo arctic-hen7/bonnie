@@ -1,6 +1,4 @@
-use lib::{
-    cache, cache_exists, get_cfg, help, init, load_from_cache, Config, BONNIE_VERSION,
-};
+use lib::{cache, cache_exists, get_cfg, help, init, load_from_cache, Config, BONNIE_VERSION};
 use std::env;
 use std::io::Write;
 
@@ -55,10 +53,13 @@ fn core() -> Result<i32, String> {
                     }
                     _ => None,
                 },
-                &cfg_path
+                &cfg_path,
             )?;
 
-            println!("A new Bonnie configuration file has been initialized at {}!", &cfg_path);
+            println!(
+                "A new Bonnie configuration file has been initialized at {}!",
+                &cfg_path
+            );
 
             return Ok(0);
         } else if prog_args[0] == "-h" || prog_args[0] == "--help" {
@@ -70,7 +71,6 @@ fn core() -> Result<i32, String> {
             // This can be specified with a command following
             verbose = true;
             prog_args.remove(0);
-
         }
         // Check if the user wants the configuration's help page (self-documenting)
         // TODO 'doc' instead/as well?

@@ -1,9 +1,9 @@
 use home::home_dir;
 
+use crate::BONNIE_VERSION;
 use std::env;
 use std::fs;
 use std::path::PathBuf;
-use crate::BONNIE_VERSION;
 
 // Gets the pre-programmed default template
 fn get_inbuilt_default_template() -> String {
@@ -28,13 +28,7 @@ fn get_template_path() -> Option<PathBuf> {
             // This will return `None` if the user's home directory isn't found, we make it also do so if the global template isn't found
             home_dir()
                 .map(|path| path.join(".bonnie").join("template.toml"))
-                .map(|path| {
-                    if path.exists() {
-                        Some(path)
-                    } else {
-                        None
-                    }
-                })
+                .map(|path| if path.exists() { Some(path) } else { None })
                 .flatten()
         }
     }
