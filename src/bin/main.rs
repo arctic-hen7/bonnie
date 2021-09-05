@@ -100,7 +100,7 @@ fn core() -> Result<i32, String> {
     if document {
         // Handle individual commands
         let msg = cfg.document(prog_args.get(1).cloned())?;
-        writeln!(stdout, "{}", msg);
+        writeln!(stdout, "{}", msg).expect("Failed to write configuration help.");
         return Ok(0);
     }
 
