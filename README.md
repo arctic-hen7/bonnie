@@ -32,7 +32,7 @@ Basically, if you have commands that you routinely run in a project, Bonnie is f
 The simplest possible Bonnie configuration file would look like this:
 
 ```toml
-version = "0.3.1"
+version = "0.3.2"
 
 [scripts]
 build = "echo Building"
