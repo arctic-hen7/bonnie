@@ -12,7 +12,7 @@ Bonnie is a command aliasing tool that allows you to quickly and efficiently def
 
 -   ✨ Supports simple **key-value aliasing**
 -   ✨ Supports inserting **custom arguments** into commands
--   ✨ Supports **interpolating** environment variables
+-   ✨ Supports **interpolating environment variables**
 -   ✨ Supports adding any and all **arguments in a single place**
 -   ✨ Supports using different commands on different operating systems
 -   ✨ Supports specifying **custom shells** for individual commands
