@@ -10,20 +10,20 @@
 
 Bonnie is a command aliasing tool that allows you to quickly and efficiently define short aliases for long commands that you have to repeatedly run. Here's a quick feature overview:
 
--   ✨ Supports simple key-value aliasing
--   ✨ Supports inserting custom arguments into commands
--   ✨ Supports interpolating environment variables
--   ✨ Supports adding any and all arguments given into a single place
+-   ✨ Supports simple **key-value aliasing**
+-   ✨ Supports inserting **custom arguments** into commands
+-   ✨ Supports **interpolating** environment variables
+-   ✨ Supports adding any and all **arguments in a single place**
 -   ✨ Supports using different commands on different operating systems
--   ✨ Supports specifying custom shells for individual commands
--   ✨ Supports specifying default shells for different operating systems on a per-file basis
--   ✨ Supports infinitely nestable subcommands
+-   ✨ Supports specifying **custom shells** for individual commands
+-   ✨ Supports specifying **default shells** for different operating systems on a per-file basis
+-   ✨ Supports **infinitely nestable subcommands**
 -   ✨ Supports subcommands executed in a certain order based on their exit codes
--   ✨ Supports caching large config files after they've been parsed for performance
+-   ✨ Supports **caching** large config files after they've been parsed for performance
 -   ✨ Supports initializing new config files from templates
--   ✨ Supports global template
--   ✨ Supports debug mode
--   ✨ Supports self-documenting configuration files
+-   ✨ Supports **global template**
+-   ✨ Supports **debug** mode
+-   ✨ Supports **self-documenting** configuration files
 
 Basically, if you have commands that you routinely run in a project, Bonnie is for you. Bonnie has support for both extremely simple and extremely complex use cases, all while maintaining top-notch performance.
 
