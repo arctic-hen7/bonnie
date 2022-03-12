@@ -35,8 +35,8 @@ impl Config {
                 Some(command_name) => command_name,
                 None => {
                     return Err(match first_time {
-                        true => String::from("Please provide a command to run."),
-                        false => String::from("Please provide a subcommand to run."),
+                        true => String::from("Please provide a command to run. You can use `bonnie help` to see the available commands in this directory."),
+                        false => String::from("Please provide a subcommand to run. You can use `bonnie help` to see the available commands in this directory."),
                     })
                 }
             };
